@@ -1,5 +1,5 @@
 module.exports = {
-  darkMode: ["class", "class"],
+  darkMode: "class",
   content: [
     "./src/**/*.{html,js,ts,jsx,tsx}", // Ensure to include the correct paths for your app files
   ],
@@ -54,5 +54,7 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [],
 };
+
+//require("tailwindcss-animate")
