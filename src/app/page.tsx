@@ -117,20 +117,16 @@ export default function Home() {
   // Solutions with enhanced descriptions
   const solutions = [
     {
-      title: "Upload & Analyze",
-      description: "Simply upload your PDF or Word documents and watch as Gru analyzes the content, extracting key concepts and relationships."
+      title: "Document Analysis & Quiz Generation",
+      description: "Upload your study materials and let Gru create tailored quizzes based on the content."
     },
     {
-      title: "Generate Smart Quizzes",
-      description: "Transform your notes into interactive quizzes customized to your learning style and knowledge gaps."
+      title: "Interactive Learning Path",
+      description: "Progress through dynamically generated questions that adapt to your performance."
     },
     {
-      title: "Ask Contextual Questions",
-      description: "Have questions about your material? Gru understands the context of your specific documents for relevant answers."
-    },
-    {
-      title: "Create Dynamic Summaries",
-      description: "Get adaptive summaries of complex topics that highlight connections between concepts for deeper understanding."
+      title: "AI-Powered Understanding",
+      description: "Get instant clarification on complex topics through contextual AI conversations."
     }
   ];
 
@@ -143,7 +139,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [testimonials.length]);
 
-  const FeatureCard = ({ icon, title, description }) => (
+  const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
     <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 dark:border-zinc-700">
       <div className="flex justify-center">{icon}</div>
       <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white text-center">{title}</h3>
@@ -151,7 +147,7 @@ export default function Home() {
     </div>
   );
 
-  const ProblemCard = ({ icon, title, description }) => (
+  const ProblemCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
     <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-6 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 text-center transform transition-all duration-300 hover:scale-105">
       <div className="flex justify-center">{icon}</div>
       <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{title}</h3>
@@ -159,7 +155,7 @@ export default function Home() {
     </div>
   );
 
-  const TestimonialCard = ({ testimonial, isActive }) => {
+  const TestimonialCard = ({ testimonial, isActive }: { testimonial: { name: string; role: string; text: string; avatar: string; rating: number }; isActive: boolean }) => {
     return (
       <div
         className={`p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 transition-all duration-300 ${isActive ? 'opacity-100 transform scale-100' : 'opacity-50 transform scale-95'
@@ -198,7 +194,7 @@ export default function Home() {
     );
   };
 
-  const NavButton = ({ href, label, isActive }) => (
+  const NavButton = ({ href, label, isActive }: { href: string; label: string; isActive: boolean }) => (
     <a
       href={href}
       className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isActive
@@ -207,9 +203,12 @@ export default function Home() {
         }`}
       onClick={(e) => {
         e.preventDefault();
-        document.querySelector(href).scrollIntoView({
-          behavior: 'smooth'
-        });
+        const element = document.querySelector(href);
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth'
+          });
+        }
         setActiveTab(href.replace('#', ''));
       }}
     >
@@ -217,11 +216,11 @@ export default function Home() {
     </a>
   );
 
-  const FileUploader = ({ onUpload }) => {
-    const fileInputRef = useRef(null);
+  const FileUploader = ({ onUpload }: { onUpload: (file: File) => void }) => {
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
 
-    const handleDragOver = (e) => {
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
       e.preventDefault();
       setIsDragging(true);
     };
@@ -230,7 +229,7 @@ export default function Home() {
       setIsDragging(false);
     };
 
-    const handleDrop = (e) => {
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       setIsDragging(false);
       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
@@ -240,7 +239,7 @@ export default function Home() {
 
     return (
       <div
-        onClick={() => fileInputRef.current.click()}
+        onClick={() => fileInputRef.current?.click()}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -274,7 +273,11 @@ export default function Home() {
     );
   };
 
-  const handleFileUpload = (file) => {
+  interface FileUploadHandler {
+    (file: File): void;
+  }
+
+  const handleFileUpload: FileUploadHandler = (file) => {
     // Mock function to simulate file upload
     console.log("File uploaded:", file.name);
     setFileUploaded(true);
@@ -381,15 +384,15 @@ export default function Home() {
       <section className="relative overflow-hidden py-20 md:py-28">
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-block mb-4 px-4 py-1.5 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-full text-sm font-medium text-indigo-600 dark:text-indigo-400">
-            Revolutionizing student learning
+                 The Ultimate Lazy Student Starter Pack
           </div>
 
           <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-            Study Smarter, Not Harder
+            Study Smarter, or Dumber🤷
           </h1>
 
           <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
-            Gru Transforms Your Notes into Knowledge
+            Gru Transforms Your Notes into Knowledge (or Brainrot :P)
           </h2>
 
           <p className="text-gray-600 dark:text-gray-300 text-lg max-w-2xl mx-auto mb-8">
@@ -463,7 +466,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">The Solution</h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Transform how you study with Gru. Discover a smarter, stress-free way to learn by converting your notes into engaging, interactive quizzes that boost retention and confidence.
+            Study smarter (or dumber — Gru doesn’t judge). Turn your messy notes into fun, interactive quizzes that actually help you remember stuff.
             </p>
           </div>
 
