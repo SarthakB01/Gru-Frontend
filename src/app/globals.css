@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Boldonse&family=Lilita+One&family=Special+Gothic+Expanded+One&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.special-gothic-expanded-one-regular {
+  font-family: "Special Gothic Expanded One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Your custom global styles go here */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
