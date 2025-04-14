@@ -22,6 +22,14 @@ import {
   Users,
 } from 'lucide-react';
 
+import {
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs';
+
 // import SignupModal from '../components/SignupModal';
 
 export default function Home() {
@@ -83,7 +91,7 @@ export default function Home() {
       role: 'Computer Science Student',
       text:
         'Gru helped me prepare for my finals in half the time! The interactive quizzes made retaining complex algorithms so much easier.',
-      avatar: '/api/placeholder/56/56',
+      avatar: 'https://placehold.co/56x56?text=AK',
       rating: 5,
     },
     {
@@ -91,7 +99,7 @@ export default function Home() {
       role: 'Biology Major',
       text:
         "Converting my lecture notes into interactive quizzes made studying so much more engaging. I've improved my grades by 15% this semester!",
-      avatar: '/api/placeholder/56/56',
+      avatar: 'https://placehold.co/56x56?text=JL',
       rating: 4,
     },
     {
@@ -99,7 +107,7 @@ export default function Home() {
       role: 'Engineering Student',
       text:
         "The AI actually understands the context of my questions and provides relevant answers. It's like having a personal tutor available 24/7.",
-      avatar: '/api/placeholder/56/56',
+      avatar: 'https://placehold.co/56x56?text=ST',
       rating: 5,
     },
     {
@@ -107,10 +115,11 @@ export default function Home() {
       role: 'Medical Student',
       text:
         'Gru has transformed how I study complex medical terminologies and concepts. The quiz generation is surprisingly accurate.',
-      avatar: '/api/placeholder/56/56',
+      avatar: 'https://placehold.co/56x56?text=TR',
       rating: 3,
     },
   ];
+
 
   const features = [
     {
@@ -242,8 +251,8 @@ export default function Home() {
   }) => (
     <div
       className={`p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 transition-all duration-300 ${isActive
-          ? 'opacity-100 transform scale-100'
-          : 'opacity-50 transform scale-95'
+        ? 'opacity-100 transform scale-100'
+        : 'opacity-50 transform scale-95'
         }`}
     >
       <div className="flex items-center mb-4">
@@ -265,8 +274,8 @@ export default function Home() {
             <svg
               key={i}
               className={`w-5 h-5 ${i < testimonial.rating
-                  ? 'text-yellow-400'
-                  : 'text-gray-300 dark:text-gray-600'
+                ? 'text-yellow-400'
+                : 'text-gray-300 dark:text-gray-600'
                 }`}
               fill="currentColor"
               viewBox="0 0 20 20"
@@ -294,8 +303,8 @@ export default function Home() {
     <a
       href={href}
       className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isActive
-          ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
-          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800'
+        ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
+        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800'
         }`}
       onClick={(e) => {
         e.preventDefault();
@@ -324,8 +333,8 @@ export default function Home() {
       {/* Navbar */}
       <nav
         className={`sticky top-0 z-50 w-full transition-all duration-300 ${scrollY > 10
-            ? 'bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-sm'
-            : 'bg-transparent'
+          ? 'bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-sm'
+          : 'bg-transparent'
           }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -333,7 +342,7 @@ export default function Home() {
             <div className="flex items-center">
               {/* Logo placeholder */}
               <div className="flex-shrink-0 flex items-center">
-                <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md">
+                <div className="h-10 w-10 text-2xl bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-start justify-center text-white font-bold shadow-md">
                   ._.
                 </div>
 
@@ -344,12 +353,11 @@ export default function Home() {
             </div>
 
             {/* Desktop nav items */}
-            <div className="hidden md:flex items-center space-x-2">
-              <div className="bg-gray-100 dark:bg-zinc-800 p-1.5 rounded-full mr-2">
+            <div className="hidden md:flex items-center space-x-4">
+              {/* Theme toggle */}
+              <div className="bg-gray-100 dark:bg-zinc-800 p-1.5 rounded-full">
                 <button
-                  onClick={() =>
-                    setTheme(theme === 'light' ? 'dark' : 'light')
-                  }
+                  onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
                   className="text-gray-800 dark:text-gray-100 hover:text-black dark:hover:text-white transition-colors"
                   aria-label="Toggle Theme"
                 >
@@ -357,35 +365,32 @@ export default function Home() {
                 </button>
               </div>
 
+              {/* Nav buttons */}
               <div className="bg-gray-100 dark:bg-zinc-800 rounded-full p-1.5 flex items-center">
-                <NavButton
-                  href="#problem"
-                  label="Problem"
-                  isActive={activeTab === 'problem'}
-                />
-                <NavButton
-                  href="#solution"
-                  label="Solution"
-                  isActive={activeTab === 'solution'}
-                />
-                <NavButton
-                  href="#features"
-                  label="Features"
-                  isActive={activeTab === 'features'}
-                />
-                <NavButton
-                  href="#demo"
-                  label="Demo"
-                  isActive={activeTab === 'demo'}
-                />
+                <NavButton href="#problem" label="Problem" isActive={activeTab === 'problem'} />
+                <NavButton href="#solution" label="Solution" isActive={activeTab === 'solution'} />
+                <NavButton href="#features" label="Features" isActive={activeTab === 'features'} />
+                <NavButton href="#demo" label="Demo" isActive={activeTab === 'demo'} />
               </div>
 
-              {/* <button onClick={() => setShowLogin(true)} className="ml-4 px-5 py-2.5 rounded-full shadow-md text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform transition-all duration-300 hover:scale-105">
-                Login
-              </button> */}
-              {/* <div className="ml-2 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-700 p-1.5 shadow-sm">
-                <User size={20} className="text-gray-500 dark:text-gray-300" />
-              </div> */}
+              {/* Auth buttons */}
+              <div className="ml-4 flex items-center gap-2">
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <button className="px-3 py-1.5 rounded-full bg-purple-500 text-white hover:bg-indigo-700 text-sm shadow-sm">
+                      Log In
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="px-3 py-1.5 rounded-full bg-purple-700 text-white hover:bg-purple-700 text-sm shadow-sm">
+                      Sign Up
+                    </button>
+                  </SignUpButton>
+                </SignedOut>
+                <SignedIn>
+                  <UserButton afterSignOutUrl="/" />
+                </SignedIn>
+              </div>
             </div>
 
             {/* Mobile menu button */}
@@ -437,12 +442,12 @@ export default function Home() {
                     onClick={() =>
                       setTheme(theme === 'light' ? 'dark' : 'light')
                     }
-                    className="rounded-full bg-gray-100 dark:bg-zinc-800 p-2 text-gray-500 dark:text-gray-300"
+                    className="rounded-full bg-gray-100  dark:bg-zinc-800  text-gray-500 dark:text-gray-300"
                   >
                     <SunMoon size={18} />
                   </button>
-                  <div className="rounded-full bg-gray-100 dark:bg-zinc-800 p-2">
-                    <User size={18} className="text-gray-500 dark:text-gray-300" />
+                  <div className="rounded-full  bg-gray-100 dark:bg-zinc-800 p-2">
+                    <User size={22} className="text-gray-500 dark:text-gray-300" />
                   </div>
                 </div>
               </div>
@@ -463,7 +468,7 @@ export default function Home() {
           </h1>
 
           <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
-            Gru Transforms Your Notes into Knowledge (or Brainrot :P)
+            Gru Transforms Your Notes into Knowledge (or Brainrot!)
           </h2>
 
           <p className="text-gray-600 dark:text-gray-300 text-lg max-w-2xl mx-auto mb-8">
@@ -473,14 +478,32 @@ export default function Home() {
 
           {/* CTA Button */}
           <div className="flex justify-center mb-12">
-            <button
-              onClick={() => setShowSignup(true)}
-              className="inline-flex items-center justify-center rounded-full text-md font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 px-8 py-3.5 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transform hover:scale-105"
-            >
-              Get Started - It's Free
-              <ChevronRight className="w-5 h-5 ml-2 transition-all duration-300 group-hover:translate-x-1" />
-            </button>
+            {/* Show if NOT signed in */}
+            <SignedOut>
+              <SignInButton mode='modal'>
+                <button
+                  onClick={() => setShowSignup(true)}
+                  className="inline-flex items-center justify-center rounded-full text-md font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 px-8 py-3.5 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transform hover:scale-105"
+                >
+                  Get Started – It’s Free
+                  <ChevronRight className="w-5 h-5 ml-2 transition-all duration-300 group-hover:translate-x-1" />
+                </button>
+              </SignInButton>
+
+            </SignedOut>
+
+            {/* Show if signed in */}
+            <SignedIn>
+              <a
+                href="#demo"
+                className="inline-flex items-center justify-center rounded-full text-md font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 px-8 py-3.5 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 transform hover:scale-105"
+              >
+                Jump to Demo
+                <ChevronRight className="w-5 h-5 ml-2 transition-all duration-300 group-hover:translate-x-1" />
+              </a>
+            </SignedIn>
           </div>
+
 
 
           {/* Browser mockup */}
@@ -768,9 +791,9 @@ export default function Home() {
                 <div
                   key={index}
                   className={`p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 transition-all duration-300 ${index === activeTestimonialIndex ||
-                      index === (activeTestimonialIndex + 1) % testimonials.length
-                      ? 'opacity-100 transform scale-100'
-                      : 'opacity-50 transform scale-95'
+                    index === (activeTestimonialIndex + 1) % testimonials.length
+                    ? 'opacity-100 transform scale-100'
+                    : 'opacity-50 transform scale-95'
                     }`}
                 >
                   <div className="flex items-center mb-4">
@@ -792,8 +815,8 @@ export default function Home() {
                         <svg
                           key={i}
                           className={`w-5 h-5 ${i < testimonial.rating
-                              ? 'text-yellow-400'
-                              : 'text-gray-300 dark:text-gray-600'
+                            ? 'text-yellow-400'
+                            : 'text-gray-300 dark:text-gray-600'
                             }`}
                           fill="currentColor"
                           viewBox="0 0 20 20"
@@ -816,8 +839,8 @@ export default function Home() {
                   key={index}
                   onClick={() => setActiveTestimonialIndex(index)}
                   className={`w-3 h-3 rounded-full transition-colors duration-300 ${activeTestimonialIndex === index
-                      ? 'bg-indigo-500'
-                      : 'bg-gray-300 dark:bg-gray-600 hover:bg-indigo-300 dark:hover:bg-indigo-700'
+                    ? 'bg-indigo-500'
+                    : 'bg-gray-300 dark:bg-gray-600 hover:bg-indigo-300 dark:hover:bg-indigo-700'
                     }`}
                   aria-label={`Go to testimonial ${index + 1}`}
                 />
@@ -848,8 +871,8 @@ export default function Home() {
               {!fileUploaded ? (
                 <div
                   className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isDragging
-                      ? 'border-indigo-500'
-                      : 'border-gray-300 dark:border-zinc-700'
+                    ? 'border-indigo-500'
+                    : 'border-gray-300 dark:border-zinc-700'
                     }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
