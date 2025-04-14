@@ -30,7 +30,15 @@ import {
   UserButton,
 } from '@clerk/nextjs';
 
+
+
+import { useAuth } from '@clerk/nextjs';
+
 export default function Home() {
+
+  const { getToken } = useAuth();
+
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [fileUploaded, setFileUploaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -60,29 +68,25 @@ export default function Home() {
   }, []);
 
   const handleFileUpload = async (file: File) => {
-    console.log('Uploading file:', file); // ✅ Add this
-    console.log('File uploaded:', file.name);
-    setIsLoading(true);
-
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
-      const res = await fetch('http://localhost:5000/upload', {
+      const token = await getToken();
+      console.log("Auth token obtained:", token?.substring(0, 10) + "...");
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('http://localhost:5000/upload', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: formData,
       });
 
-      if (!res.ok) throw new Error('Upload failed');
-      const data = await res.json();
-
-      console.log('Backend response:', data);
-      setFileUploaded(true);
+      // Rest of your code...
     } catch (error) {
-      console.error('Error uploading file:', error);
-      alert('An error occurred during the file upload.');
-    } finally {
-      setIsLoading(false);
+      console.error("Error uploading file:", error);
+      throw error;
     }
   };
 
@@ -98,14 +102,14 @@ export default function Home() {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
-  
+
     console.log('File dropped:', e.dataTransfer.files); // ✅ Add this
-  
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileUpload(e.dataTransfer.files[0]);
     }
   };
-  
+
 
   const testimonials = [
     {
@@ -458,9 +462,7 @@ export default function Home() {
                 Demo
               </a>
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-zinc-700">
-                {/* <button onClick={() => setShowLogin(true)} className="px-4 py-2 rounded-full shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                  Login
-                </button> */}
+
                 <div className="flex space-x-2">
                   <button
                     onClick={() =>
@@ -897,8 +899,8 @@ export default function Home() {
               {!fileUploaded ? (
                 <div
                   className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isDragging
-                      ? 'border-indigo-500'
-                      : 'border-gray-300 dark:border-zinc-700'
+                    ? 'border-indigo-500'
+                    : 'border-gray-300 dark:border-zinc-700'
                     }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}

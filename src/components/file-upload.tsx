@@ -29,6 +29,7 @@ export default function FileUpload() {
     formData.append('file', file);
   
     const token = localStorage.getItem('token'); // 👈 get the token
+    console.log("Token is: ", token);
   
     try {
       const res = await fetch('http://localhost:5000/upload', {
