@@ -4,9 +4,6 @@ export default function Page(){
     return (
         <div className="flex justify-center p-5">
             <SignUp/>
-
         </div>
     )
-
-
 }

@@ -22,7 +22,7 @@ import {
   Users,
 } from 'lucide-react';
 
-import SignupModal from '../components/SignupModal';
+// import SignupModal from '../components/SignupModal';
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,7 +30,11 @@ export default function Home() {
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('home');
   const [scrollY, setScrollY] = useState(0);
+
   const [showSignup, setShowSignup] = useState(false);
+
+  const [showLogin, setShowLogin] = useState(false);
+
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -237,11 +241,10 @@ export default function Home() {
     isActive: boolean;
   }) => (
     <div
-      className={`p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 transition-all duration-300 ${
-        isActive
+      className={`p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 transition-all duration-300 ${isActive
           ? 'opacity-100 transform scale-100'
           : 'opacity-50 transform scale-95'
-      }`}
+        }`}
     >
       <div className="flex items-center mb-4">
         <img
@@ -261,11 +264,10 @@ export default function Home() {
           {[...Array(5)].map((_, i) => (
             <svg
               key={i}
-              className={`w-5 h-5 ${
-                i < testimonial.rating
+              className={`w-5 h-5 ${i < testimonial.rating
                   ? 'text-yellow-400'
                   : 'text-gray-300 dark:text-gray-600'
-              }`}
+                }`}
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -291,11 +293,10 @@ export default function Home() {
   }) => (
     <a
       href={href}
-      className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-        isActive
+      className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isActive
           ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
           : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800'
-      }`}
+        }`}
       onClick={(e) => {
         e.preventDefault();
         const element = document.querySelector(href);
@@ -322,11 +323,10 @@ export default function Home() {
 
       {/* Navbar */}
       <nav
-        className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-          scrollY > 10
+        className={`sticky top-0 z-50 w-full transition-all duration-300 ${scrollY > 10
             ? 'bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-sm'
             : 'bg-transparent'
-        }`}
+          }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -353,7 +353,7 @@ export default function Home() {
                   className="text-gray-800 dark:text-gray-100 hover:text-black dark:hover:text-white transition-colors"
                   aria-label="Toggle Theme"
                 >
-                  <SunMoon className="w-5 h-5" />
+                  <SunMoon className="w-6 h-3 scale-150" />
                 </button>
               </div>
 
@@ -380,12 +380,12 @@ export default function Home() {
                 />
               </div>
 
-              <button className="ml-4 px-5 py-2.5 rounded-full shadow-md text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform transition-all duration-300 hover:scale-105">
+              {/* <button onClick={() => setShowLogin(true)} className="ml-4 px-5 py-2.5 rounded-full shadow-md text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform transition-all duration-300 hover:scale-105">
                 Login
-              </button>
-              <div className="ml-2 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-700 p-1.5 shadow-sm">
+              </button> */}
+              {/* <div className="ml-2 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-700 p-1.5 shadow-sm">
                 <User size={20} className="text-gray-500 dark:text-gray-300" />
-              </div>
+              </div> */}
             </div>
 
             {/* Mobile menu button */}
@@ -429,9 +429,9 @@ export default function Home() {
                 Demo
               </a>
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-zinc-700">
-                <button className="px-4 py-2 rounded-full shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                {/* <button onClick={() => setShowLogin(true)} className="px-4 py-2 rounded-full shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Login
-                </button>
+                </button> */}
                 <div className="flex space-x-2">
                   <button
                     onClick={() =>
@@ -482,8 +482,6 @@ export default function Home() {
             </button>
           </div>
 
-          {/* ✅ Signup Modal */}
-          {showSignup && <SignupModal onClose={() => setShowSignup(false)} />}
 
           {/* Browser mockup */}
           <div className="rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 shadow-xl border border-gray-200 dark:border-zinc-700 overflow-hidden max-w-4xl mx-auto transform transition-all duration-500 hover:scale-[1.02]">
@@ -769,12 +767,11 @@ export default function Home() {
               {testimonials.map((testimonial, index) => (
                 <div
                   key={index}
-                  className={`p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 transition-all duration-300 ${
-                    index === activeTestimonialIndex ||
-                    index === (activeTestimonialIndex + 1) % testimonials.length
+                  className={`p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 transition-all duration-300 ${index === activeTestimonialIndex ||
+                      index === (activeTestimonialIndex + 1) % testimonials.length
                       ? 'opacity-100 transform scale-100'
                       : 'opacity-50 transform scale-95'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center mb-4">
                     <img
@@ -794,11 +791,10 @@ export default function Home() {
                       {[...Array(5)].map((_, i) => (
                         <svg
                           key={i}
-                          className={`w-5 h-5 ${
-                            i < testimonial.rating
+                          className={`w-5 h-5 ${i < testimonial.rating
                               ? 'text-yellow-400'
                               : 'text-gray-300 dark:text-gray-600'
-                          }`}
+                            }`}
                           fill="currentColor"
                           viewBox="0 0 20 20"
                         >
@@ -819,11 +815,10 @@ export default function Home() {
                 <button
                   key={index}
                   onClick={() => setActiveTestimonialIndex(index)}
-                  className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                    activeTestimonialIndex === index
+                  className={`w-3 h-3 rounded-full transition-colors duration-300 ${activeTestimonialIndex === index
                       ? 'bg-indigo-500'
                       : 'bg-gray-300 dark:bg-gray-600 hover:bg-indigo-300 dark:hover:bg-indigo-700'
-                  }`}
+                    }`}
                   aria-label={`Go to testimonial ${index + 1}`}
                 />
               ))}
@@ -852,11 +847,10 @@ export default function Home() {
               </h3>
               {!fileUploaded ? (
                 <div
-                  className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${
-                    isDragging
+                  className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isDragging
                       ? 'border-indigo-500'
                       : 'border-gray-300 dark:border-zinc-700'
-                  }`}
+                    }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
