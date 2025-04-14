@@ -17,16 +17,19 @@ export default function FileUpload() {
   };
 
   const handleUpload = async () => {
-    if (!file) return;
-
+    if (!file) {
+      setMessage('❌ Please select a file');
+      return;
+    }
+  
     setUploading(true);
     setMessage('');
-
+  
     const formData = new FormData();
     formData.append('file', file);
-
+  
     const token = localStorage.getItem('token'); // 👈 get the token
-
+  
     try {
       const res = await fetch('http://localhost:5000/upload', {
         method: 'POST',
@@ -35,7 +38,7 @@ export default function FileUpload() {
         },
         body: formData,
       });
-
+  
       const data = await res.json();
       if (res.ok) {
         setMessage(`✅ Uploaded: ${data.fileName}`);
@@ -49,7 +52,7 @@ export default function FileUpload() {
       setUploading(false);
     }
   };
-
+  
 
   return (
     <div className="flex flex-col items-center space-y-4">

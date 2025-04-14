@@ -27,6 +27,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Gru AI",
   description: "have Gru summarize your files, chat with them, and more!",
+  icons: {
+    icon: '/appstore.png', // or '/favicon.png'
+  }
 };
 
 // src/app/layout.tsx

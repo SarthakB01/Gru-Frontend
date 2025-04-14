@@ -30,19 +30,15 @@ import {
   UserButton,
 } from '@clerk/nextjs';
 
-// import SignupModal from '../components/SignupModal';
-
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [fileUploaded, setFileUploaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('home');
   const [scrollY, setScrollY] = useState(0);
-
   const [showSignup, setShowSignup] = useState(false);
-
   const [showLogin, setShowLogin] = useState(false);
-
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -63,9 +59,31 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleFileUpload = (file: File) => {
+  const handleFileUpload = async (file: File) => {
+    console.log('Uploading file:', file); // ✅ Add this
     console.log('File uploaded:', file.name);
-    setFileUploaded(true);
+    setIsLoading(true);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('http://localhost:5000/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+
+      console.log('Backend response:', data);
+      setFileUploaded(true);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('An error occurred during the file upload.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
@@ -80,10 +98,14 @@ export default function Home() {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
+  
+    console.log('File dropped:', e.dataTransfer.files); // ✅ Add this
+  
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileUpload(e.dataTransfer.files[0]);
     }
   };
+  
 
   const testimonials = [
     {
@@ -320,6 +342,8 @@ export default function Home() {
       {label}
     </a>
   );
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-zinc-900 dark:to-black text-gray-900 dark:text-gray-100">
@@ -864,15 +888,17 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
+            {/* Upload Section */}
             <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700">
               <h3 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">
                 Upload Your Document
               </h3>
+
               {!fileUploaded ? (
                 <div
                   className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isDragging
-                    ? 'border-indigo-500'
-                    : 'border-gray-300 dark:border-zinc-700'
+                      ? 'border-indigo-500'
+                      : 'border-gray-300 dark:border-zinc-700'
                     }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
@@ -896,31 +922,40 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900">
-                    <svg
-                      className="w-8 h-8 text-green-500 dark:text-green-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    File Uploaded Successfully!
-                  </h4>
-                  <p className="text-gray-500 dark:text-gray-400 mb-4">
-                    Your document is being processed by Gru AI.
-                  </p>
-                  <button
-                    onClick={() => setFileUploaded(false)}
-                    className="px-4 py-2 rounded-full text-sm text-indigo-600 dark:text-indigo-400 border border-indigo-600 dark:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
-                  >
-                    Upload Another Document
-                  </button>
+                  {isLoading ? (
+                    <div className="flex justify-center items-center space-x-2">
+                      <div className="w-8 h-8 border-4 border-t-indigo-500 border-gray-200 rounded-full animate-spin"></div>
+                      <span className="text-gray-600 dark:text-gray-300">Processing...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900">
+                        <svg
+                          className="w-8 h-8 text-green-500 dark:text-green-400"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                        File Uploaded Successfully!
+                      </h4>
+                      <p className="text-gray-500 dark:text-gray-400 mb-4">
+                        Your document is being processed by Gru AI.
+                      </p>
+                      <button
+                        onClick={() => setFileUploaded(false)}
+                        className="px-4 py-2 rounded-full text-sm text-indigo-600 dark:text-indigo-400 border border-indigo-600 dark:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                      >
+                        Upload Another Document
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -932,8 +967,7 @@ export default function Home() {
                   <li className="flex">
                     <span className="mr-2 font-bold">1.</span>
                     <span>
-                      Gru analyzes your document to extract key concepts and
-                      relationships
+                      Gru analyzes your document to extract key concepts and relationships
                     </span>
                   </li>
                   <li className="flex">
@@ -945,14 +979,14 @@ export default function Home() {
                   <li className="flex">
                     <span className="mr-2 font-bold">3.</span>
                     <span>
-                      Creates an interactive study environment for maximum
-                      retention
+                      Creates an interactive study environment for maximum retention
                     </span>
                   </li>
                 </ol>
               </div>
             </div>
 
+            {/* Tabs Section */}
             <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700">
               <Tabs.Root defaultValue="quiz" className="w-full">
                 <Tabs.List className="flex mb-6 bg-gray-100 dark:bg-zinc-800 rounded-lg p-1">
@@ -971,147 +1005,17 @@ export default function Home() {
                 </Tabs.List>
 
                 <Tabs.Content value="quiz" className="outline-none">
-                  <div className="border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden shadow-md">
-                    <div className="bg-gray-50 dark:bg-zinc-800 px-4 py-3 border-b border-gray-200 dark:border-zinc-700">
-                      <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                        Biology Quiz - Cell Structure
-                      </h3>
-                    </div>
-                    <div className="p-4 bg-white dark:bg-zinc-900">
-                      <div className="mb-6">
-                        <p className="text-gray-800 dark:text-gray-200 mb-3">
-                          What is the primary function of mitochondria in
-                          eukaryotic cells?
-                        </p>
-                        <div className="space-y-2">
-                          <div className="flex items-center">
-                            <input
-                              type="radio"
-                              id="option1"
-                              name="answer"
-                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
-                            />
-                            <label
-                              htmlFor="option1"
-                              className="ml-2 text-gray-700 dark:text-gray-300"
-                            >
-                              Protein synthesis
-                            </label>
-                          </div>
-                          <div className="flex items-center">
-                            <input
-                              type="radio"
-                              id="option2"
-                              name="answer"
-                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
-                            />
-                            <label
-                              htmlFor="option2"
-                              className="ml-2 text-gray-700 dark:text-gray-300"
-                            >
-                              Energy production (ATP)
-                            </label>
-                          </div>
-                          <div className="flex items-center">
-                            <input
-                              type="radio"
-                              id="option3"
-                              name="answer"
-                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
-                            />
-                            <label
-                              htmlFor="option3"
-                              className="ml-2 text-gray-700 dark:text-gray-300"
-                            >
-                              Lipid storage
-                            </label>
-                          </div>
-                          <div className="flex items-center">
-                            <input
-                              type="radio"
-                              id="option4"
-                              name="answer"
-                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
-                            />
-                            <label
-                              htmlFor="option4"
-                              className="ml-2 text-gray-700 dark:text-gray-300"
-                            >
-                              DNA replication
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex justify-between">
-                        <button className="px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
-                          Previous
-                        </button>
-                        <button className="px-4 py-2 rounded-lg text-sm text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-colors">
-                          Check Answer
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Quiz Content */}
                 </Tabs.Content>
 
                 <Tabs.Content value="chat" className="outline-none">
-                  <div className="border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden shadow-md h-80 flex flex-col">
-                    <div className="bg-gray-50 dark:bg-zinc-800 px-4 py-3 border-b border-gray-200 dark:border-zinc-700">
-                      <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                        Ask about your content
-                      </h3>
-                    </div>
-                    <div className="flex-1 bg-white dark:bg-zinc-900 p-4 overflow-y-auto">
-                      <div className="space-y-4">
-                        <div className="flex items-start">
-                          <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-lg p-3 max-w-[80%]">
-                            <p className="text-gray-800 dark:text-gray-200">
-                              Hi there! I've analyzed your Biology notes. What
-                              would you like to know about cell structures?
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start justify-end">
-                          <div className="bg-gray-100 dark:bg-zinc-800 rounded-lg p-3 max-w-[80%]">
-                            <p className="text-gray-800 dark:text-gray-200">
-                              Can you explain the difference between mitochondria
-                              and chloroplasts?
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start">
-                          <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-lg p-3 max-w-[80%]">
-                            <p className="text-gray-800 dark:text-gray-200">
-                              Based on your notes: Mitochondria and chloroplasts
-                              are both organelles in eukaryotic cells, but they
-                              serve different functions. Mitochondria are present
-                              in almost all eukaryotic cells and produce energy
-                              through cellular respiration. Chloroplasts are found
-                              in plant cells and some algae and conduct
-                              photosynthesis to convert light into chemical
-                              energy.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-700 p-3">
-                      <div className="flex items-center">
-                        <input
-                          type="text"
-                          placeholder="Ask a question about your notes..."
-                          className="flex-1 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-4 py-2 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                        <button className="ml-2 p-2 rounded-lg bg-indigo-500 text-white hover:bg-indigo-600 transition-colors">
-                          <Send size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Chat Content */}
                 </Tabs.Content>
               </Tabs.Root>
             </div>
           </div>
+
+
         </div>
       </section>
 
