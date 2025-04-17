@@ -546,7 +546,7 @@ export default function Home() {
             </div>
             <div className="p-4">
               <img
-                src="/api/placeholder/700/400"
+                src="/placeholder/700/400"
                 alt="Gru AI Interface"
                 className="rounded-lg border border-gray-200 dark:border-zinc-600 shadow-md"
               />
@@ -1007,11 +1007,143 @@ export default function Home() {
                 </Tabs.List>
 
                 <Tabs.Content value="quiz" className="outline-none">
-                  {/* Quiz Content */}
+                  <div className="border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden shadow-md">
+                    <div className="bg-gray-50 dark:bg-zinc-800 px-4 py-3 border-b border-gray-200 dark:border-zinc-700">
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                        Biology Quiz - Cell Structure
+                      </h3>
+                    </div>
+                    <div className="p-4 bg-white dark:bg-zinc-900">
+                      <div className="mb-6">
+                        <p className="text-gray-800 dark:text-gray-200 mb-3">
+                          What is the primary function of mitochondria in
+                          eukaryotic cells?
+                        </p>
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <input
+                              type="radio"
+                              id="option1"
+                              name="answer"
+                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
+                            />
+                            <label
+                              htmlFor="option1"
+                              className="ml-2 text-gray-700 dark:text-gray-300"
+                            >
+                              Protein synthesis
+                            </label>
+                          </div>
+                          <div className="flex items-center">
+                            <input
+                              type="radio"
+                              id="option2"
+                              name="answer"
+                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
+                            />
+                            <label
+                              htmlFor="option2"
+                              className="ml-2 text-gray-700 dark:text-gray-300"
+                            >
+                              Energy production (ATP)
+                            </label>
+                          </div>
+                          <div className="flex items-center">
+                            <input
+                              type="radio"
+                              id="option3"
+                              name="answer"
+                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
+                            />
+                            <label
+                              htmlFor="option3"
+                              className="ml-2 text-gray-700 dark:text-gray-300"
+                            >
+                              Lipid storage
+                            </label>
+                          </div>
+                          <div className="flex items-center">
+                            <input
+                              type="radio"
+                              id="option4"
+                              name="answer"
+                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
+                            />
+                            <label
+                              htmlFor="option4"
+                              className="ml-2 text-gray-700 dark:text-gray-300"
+                            >
+                              DNA replication
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <button className="px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
+                          Previous
+                        </button>
+                        <button className="px-4 py-2 rounded-lg text-sm text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-colors">
+                          Check Answer
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </Tabs.Content>
 
                 <Tabs.Content value="chat" className="outline-none">
-                  {/* Chat Content */}
+                  <div className="border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden shadow-md h-80 flex flex-col">
+                    <div className="bg-gray-50 dark:bg-zinc-800 px-4 py-3 border-b border-gray-200 dark:border-zinc-700">
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                        Ask about your content
+                      </h3>
+                    </div>
+                    <div className="flex-1 bg-white dark:bg-zinc-900 p-4 overflow-y-auto">
+                      <div className="space-y-4">
+                        <div className="flex items-start">
+                          <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-lg p-3 max-w-[80%]">
+                            <p className="text-gray-800 dark:text-gray-200">
+                              Hi there! I've analyzed your Biology notes. What
+                              would you like to know about cell structures?
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start justify-end">
+                          <div className="bg-gray-100 dark:bg-zinc-800 rounded-lg p-3 max-w-[80%]">
+                            <p className="text-gray-800 dark:text-gray-200">
+                              Can you explain the difference between mitochondria
+                              and chloroplasts?
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start">
+                          <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-lg p-3 max-w-[80%]">
+                            <p className="text-gray-800 dark:text-gray-200">
+                              Based on your notes: Mitochondria and chloroplasts
+                              are both organelles in eukaryotic cells, but they
+                              serve different functions. Mitochondria are present
+                              in almost all eukaryotic cells and produce energy
+                              through cellular respiration. Chloroplasts are found
+                              in plant cells and some algae and conduct
+                              photosynthesis to convert light into chemical
+                              energy.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-700 p-3">
+                      <div className="flex items-center">
+                        <input
+                          type="text"
+                          placeholder="Ask a question about your notes..."
+                          className="flex-1 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-4 py-2 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <button className="ml-2 p-2 rounded-lg bg-indigo-500 text-white hover:bg-indigo-600 transition-colors">
+                          <Send size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </Tabs.Content>
               </Tabs.Root>
             </div>

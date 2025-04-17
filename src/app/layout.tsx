@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider afterSignOutUrl="/" publishableKey={process.env.CLERK_PUBLISHABLE_KEY}>
       <html lang="en" suppressHydrationWarning>
         <head>
           <style>{`
@@ -44,21 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         `}</style>
         </head>
         <body>
-          <ThemeProvider
-            attribute="class"
-            // defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {/* <header className="flex justify-end items-center p-4 gap-4 h-16">
-            <SignedOut>
-              <SignInButton />
-              <SignUpButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </header> */}
+          <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
             {children}
           </ThemeProvider>
         </body>
