@@ -37,8 +37,6 @@ import { useAuth } from '@clerk/nextjs';
 export default function Home() {
 
   const { getToken } = useAuth();
-
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [fileUploaded, setFileUploaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,14 +65,29 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleFileUpload = async (file: File) => {
-    try {
-      const token = await getToken();
-      console.log("Auth token obtained:", token?.substring(0, 10) + "...");
 
+  const handleFileUpload = async (file: File) => {
+    if (!file) {
+      console.error("No file provided");
+      return;
+    }
+
+    try {
+      // Get auth token from Clerk
+      const token = await getToken();
+
+      // In your frontend handleFileUpload function:
+      console.log("Token received:", token ? "Yes (length: " + token.length + ")" : "No token");
+
+      if (!token) {
+        throw new Error("Authentication token not available. Please sign in.");
+      }
+
+      // Create FormData and append file
       const formData = new FormData();
       formData.append('file', file);
 
+      // Make API request with auth token
       const response = await fetch('http://localhost:5000/upload', {
         method: 'POST',
         headers: {
@@ -83,12 +96,20 @@ export default function Home() {
         body: formData,
       });
 
-      // Rest of your code...
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+
+      const data = await response.json();
+      console.log("Upload successful:", data);
+      return data;
     } catch (error) {
       console.error("Error uploading file:", error);
       throw error;
     }
   };
+
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
@@ -569,25 +590,7 @@ export default function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-6 text-center">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 transform transition-all duration-300 hover:scale-105"
-              >
-                <p className="text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-                  {stat.value}
-                </p>
-                <p className="text-gray-600 dark:text-gray-300">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Problem Section */}
-      <section id="problem" className="py-20 bg-white dark:bg-zinc-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
             {problems.map((problem, index) => (
               <div
@@ -606,6 +609,37 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Problem Section */}
+      <section id="problem" className="py-20 bg-white dark:bg-zinc-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <p className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-gray-100 leading-tight max-w-xl mx-auto">
+              We poked around the{" "}
+              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                data
+              </span>
+              . Here’s what it coughed up.
+            </p>
+
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            {stats.map((stat, index) => (
+              <div
+                key={index}
+                className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-10 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-700 transform transition-transform duration-300 hover:scale-105"
+              >
+                <p className="text-5xl font-extrabold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+                  {stat.value}
+                </p>
+                <p className="text-lg text-gray-600 dark:text-gray-300 font-medium">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
 
       {/* Solution Section */}
       <section
@@ -766,123 +800,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-white dark:bg-zinc-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-              Key Features
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Gru is designed to revolutionize how you study, making learning
-              efficient, engaging, and effective.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 dark:border-zinc-700"
-              >
-                <div className="flex justify-center">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white text-center">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 text-center">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-zinc-800 dark:to-zinc-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-              What Students Say
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Real students share their experiences with Gru and how it
-              transformed their study habits.
-            </p>
-          </div>
-
-          <div className="relative">
-            <div className="grid md:grid-cols-2 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <div
-                  key={index}
-                  className={`p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 transition-all duration-300 ${index === activeTestimonialIndex ||
-                    index === (activeTestimonialIndex + 1) % testimonials.length
-                    ? 'opacity-100 transform scale-100'
-                    : 'opacity-50 transform scale-95'
-                    }`}
-                >
-                  <div className="flex items-center mb-4">
-                    <img
-                      src={testimonial.avatar}
-                      alt={testimonial.name}
-                      className="w-12 h-12 rounded-full mr-4 object-cover"
-                    />
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {testimonial.name}
-                      </h4>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {testimonial.role}
-                      </p>
-                    </div>
-                    <div className="ml-auto flex">
-                      {[...Array(5)].map((_, i) => (
-                        <svg
-                          key={i}
-                          className={`w-5 h-5 ${i < testimonial.rating
-                            ? 'text-yellow-400'
-                            : 'text-gray-300 dark:text-gray-600'
-                            }`}
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-300 italic">
-                    "{testimonial.text}"
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-10 flex justify-center space-x-2">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setActiveTestimonialIndex(index)}
-                  className={`w-3 h-3 rounded-full transition-colors duration-300 ${activeTestimonialIndex === index
-                    ? 'bg-indigo-500'
-                    : 'bg-gray-300 dark:bg-gray-600 hover:bg-indigo-300 dark:hover:bg-indigo-700'
-                    }`}
-                  aria-label={`Go to testimonial ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Demo Section */}
-      <section id="demo" className="py-20 bg-white dark:bg-zinc-900">
+      <section id="demo" className="py-16 bg-white  dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-700 ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-              Try Gru Yourself
+          <div className="text-center mb-12">
+            <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-gray-100 leading-tight max-w-xl mx-auto">
+              Wanna see Gru in action?{" "}
+              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Try it yourself.
+              </span>
             </h2>
+
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Upload a sample document to see how Gru can transform your study
               materials into an interactive learning experience.
@@ -1150,11 +1078,11 @@ export default function Home() {
           </div>
 
 
-        </div>
-      </section>
+        </div >
+      </section >
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 relative overflow-hidden" >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-white/10 mix-blend-overlay blur-3xl"></div>
           <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-white/10 mix-blend-overlay blur-3xl"></div>
@@ -1183,10 +1111,122 @@ export default function Home() {
             </a>
           </div>
         </div>
-      </section>
+      </section >
+
+      {/* Features Section */}
+      <section id="features" className="py-20 bg-white dark:bg-zinc-900" >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+              Key Features
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Gru is designed to revolutionize how you study, making learning
+              efficient, engaging, and effective.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 dark:border-zinc-700"
+              >
+                <div className="flex justify-center">{feature.icon}</div>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white text-center">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 text-center">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section >
+
+      {/* Testimonials */}
+      <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-zinc-800 dark:to-zinc-900" >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+              What Students Say
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Real students share their experiences with Gru and how it
+              transformed their study habits.
+            </p>
+          </div>
+
+          <div className="relative">
+            <div className="grid md:grid-cols-2 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <div
+                  key={index}
+                  className={`p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 transition-all duration-300 ${index === activeTestimonialIndex ||
+                    index === (activeTestimonialIndex + 1) % testimonials.length
+                    ? 'opacity-100 transform scale-100'
+                    : 'opacity-50 transform scale-95'
+                    }`}
+                >
+                  <div className="flex items-center mb-4">
+                    <img
+                      src={testimonial.avatar}
+                      alt={testimonial.name}
+                      className="w-12 h-12 rounded-full mr-4 object-cover"
+                    />
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        {testimonial.name}
+                      </h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {testimonial.role}
+                      </p>
+                    </div>
+                    <div className="ml-auto flex">
+                      {[...Array(5)].map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`w-5 h-5 ${i < testimonial.rating
+                            ? 'text-yellow-400'
+                            : 'text-gray-300 dark:text-gray-600'
+                            }`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-300 italic">
+                    "{testimonial.text}"
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10 flex justify-center space-x-2">
+              {testimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveTestimonialIndex(index)}
+                  className={`w-3 h-3 rounded-full transition-colors duration-300 ${activeTestimonialIndex === index
+                    ? 'bg-indigo-500'
+                    : 'bg-gray-300 dark:bg-gray-600 hover:bg-indigo-300 dark:hover:bg-indigo-700'
+                    }`}
+                  aria-label={`Go to testimonial ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section >
+
+
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-zinc-900 py-12 border-t border-gray-200 dark:border-zinc-800">
+      <footer className="bg-white dark:bg-zinc-900 py-12 border-t border-gray-200 dark:border-zinc-800" >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-6 md:mb-0">
@@ -1309,7 +1349,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </footer>
-    </div>
+      </footer >
+    </div >
   );
 }
