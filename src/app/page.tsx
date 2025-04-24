@@ -37,6 +37,7 @@ import { useAuth } from '@clerk/nextjs';
 export default function Home() {
 
   const { getToken } = useAuth();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [fileUploaded, setFileUploaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -65,7 +66,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-
   const handleFileUpload = async (file: File) => {
     if (!file) {
       console.error("No file provided");
@@ -74,9 +74,8 @@ export default function Home() {
 
     try {
       // Get auth token from Clerk
+      console.log("Attempting to get token...");
       const token = await getToken();
-
-      // In your frontend handleFileUpload function:
       console.log("Token received:", token ? "Yes (length: " + token.length + ")" : "No token");
 
       if (!token) {
@@ -92,13 +91,15 @@ export default function Home() {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
+          // Remove the Content-Type header - let the browser set it
         },
         body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
+        console.error("Upload failed:", errorData.error);
+        throw new Error(errorData.error || 'Unknown error during upload');
       }
 
       const data = await response.json();
@@ -106,6 +107,9 @@ export default function Home() {
       return data;
     } catch (error) {
       console.error("Error uploading file:", error);
+      if (error instanceof Error) {
+        console.error("Error stack:", error.stack);
+      }
       throw error;
     }
   };
@@ -418,8 +422,8 @@ export default function Home() {
               <div className="bg-gray-100 dark:bg-zinc-800 rounded-full p-1.5 flex items-center">
                 <NavButton href="#problem" label="Problem" isActive={activeTab === 'problem'} />
                 <NavButton href="#solution" label="Solution" isActive={activeTab === 'solution'} />
-                <NavButton href="#features" label="Features" isActive={activeTab === 'features'} />
                 <NavButton href="#demo" label="Demo" isActive={activeTab === 'demo'} />
+                <NavButton href="#features" label="Features" isActive={activeTab === 'features'} />
               </div>
 
               {/* Auth buttons */}
@@ -471,17 +475,18 @@ export default function Home() {
                 Solution
               </a>
               <a
-                href="#features"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 hover:bg-gray-50 dark:hover:text-white dark:hover:bg-zinc-800"
-              >
-                Features
-              </a>
-              <a
                 href="#demo"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 hover:bg-gray-50 dark:hover:text-white dark:hover:bg-zinc-800"
               >
                 Demo
               </a>
+              <a
+                href="#features"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 hover:bg-gray-50 dark:hover:text-white dark:hover:bg-zinc-800"
+              >
+                Features
+              </a>
+
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-zinc-700">
 
                 <div className="flex space-x-2">
