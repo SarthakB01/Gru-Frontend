@@ -67,55 +67,27 @@ export default function Home() {
   }, []);
 
   const handleFileUpload = async (file: File) => {
-    if (!file) {
-      console.error("No file provided");
-      return;
-    }
-  
-    try {
-      // Get the standard session token
-      console.log("Attempting to get token...");
-      const token = await getToken();
-      console.log("Token received:", token ? "Yes (length: " + token.length + ")" : "No token");
-  
-      if (!token) {
-        throw new Error("Authentication token not available. Please sign in.");
-      }
+    const formData = new FormData();
+    formData.append('file', file);
 
-      // Create FormData and append file
-      const formData = new FormData();
-      formData.append('file', file);
-  
-      // Make API request with auth token
-      console.log("Attempting to upload file...");
-      const response = await fetch('http://localhost:5000/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData,
-      }).catch(error => {
-        console.error("Network error:", error);
-        throw new Error(`Network error: ${error.message}`);
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        console.error("Upload failed:", errorData.error);
-        throw new Error(errorData.error || 'Unknown error during upload');
-      }
-  
-      const data = await response.json();
-      console.log("Upload successful:", data);
-      return data;
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      if (error instanceof Error) {
-        console.error("Error stack:", error.stack);
-      }
-      throw error;
+    const res = await fetch('http://localhost:5000/upload', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDExMUFBQSIsImtpZCI6Imluc18ydzh5RVhLaHlObFFsblVjMERyQjI4eEI4SDAiLCJ0eXAiOiJKV1QifQ.eyJhenAiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJleHAiOjE3NDU1MTI4OTUsImZ2YSI6WzQ0OCwtMV0sImlhdCI6MTc0NTUxMjgzNSwiaXNzIjoiaHR0cHM6Ly9yZWxheGluZy1mb3hob3VuZC04OC5jbGVyay5hY2NvdW50cy5kZXYiLCJuYmYiOjE3NDU1MTI4MjUsInNpZCI6InNlc3NfMndBWWMyMWpJVDJZTE9FWkxtd0ptRXZjNW80Iiwic3ViIjoidXNlcl8ydzh5c3diY0tYS1RTNkNqWlV3WXJIaHU0TEciLCJ2IjoyfQ.gbJN3yg-vVU6laNXd1j-aGnMuG6lNd7cGbGag-ssz3vsGwGZDrYC3l7hNMziA-F4shMHqmsnZ43SNtf2kQpnLzZyqfjsG38uFI4oGpgFMUJdo2vqPlpRimpZHzBCXdWMHq96hnGaEpaUtob1iHodY2_bsbDqc372w-H9BaUYoGqkZzpgC2_1Ud-dvt19DhEIyk6sVy7ht4hXArybMLvAukq7GhnLfLum272bYbgwR3Hrtzt56oCKJxqzAI9UInQXIppxAy46yplNGfTrbV19g5gVISzIo5u3XLE0dRCBniiqNTln5Em2OEo23G32yTooHEfpaO5dMYjHtYDfLvux_Q`
+      },
+      body: formData
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(`Something went wrong on the server: ${JSON.stringify(error)}`);
     }
+
+    const data = await res.json();
+    console.log('Success:', data);
   };
+
+
 
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
@@ -575,7 +547,7 @@ export default function Home() {
             </div>
             <div className="p-4">
               <img
-                src="/placeholder/700/400"
+                src="https://placehold.co/56x56?text=Gru"
                 alt="Gru AI Interface"
                 className="rounded-lg border border-gray-200 dark:border-zinc-600 shadow-md"
               />
@@ -669,7 +641,7 @@ export default function Home() {
             <div className="md:w-1/2">
               <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 h-full transform transition-all duration-300 hover:shadow-lg">
                 <img
-                  src="/api/placeholder/400/300"
+                  src="https://placehold.co/800x75?text=You+give+your+docs+to+Gru+and+let+it+work+the+rest"
                   alt="Student studying with Gru"
                   className="rounded-lg w-full object-cover mb-6 shadow-md"
                 />
