@@ -71,13 +71,13 @@ export default function Home() {
       console.error("No file provided");
       return;
     }
-
+  
     try {
-      // Get auth token from Clerk
+      // Get the standard session token
       console.log("Attempting to get token...");
       const token = await getToken();
       console.log("Token received:", token ? "Yes (length: " + token.length + ")" : "No token");
-
+  
       if (!token) {
         throw new Error("Authentication token not available. Please sign in.");
       }
@@ -85,23 +85,26 @@ export default function Home() {
       // Create FormData and append file
       const formData = new FormData();
       formData.append('file', file);
-
+  
       // Make API request with auth token
+      console.log("Attempting to upload file...");
       const response = await fetch('http://localhost:5000/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
-          // Remove the Content-Type header - let the browser set it
         },
         body: formData,
+      }).catch(error => {
+        console.error("Network error:", error);
+        throw new Error(`Network error: ${error.message}`);
       });
-
+  
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
         console.error("Upload failed:", errorData.error);
         throw new Error(errorData.error || 'Unknown error during upload');
       }
-
+  
       const data = await response.json();
       console.log("Upload successful:", data);
       return data;
@@ -537,7 +540,7 @@ export default function Home() {
                   onClick={() => setShowSignup(true)}
                   className="inline-flex items-center justify-center rounded-full text-md font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 px-8 py-3.5 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transform hover:scale-105"
                 >
-                  Get Started – It’s Free
+                  Get Started – It's Free
                   <ChevronRight className="w-5 h-5 ml-2 transition-all duration-300 group-hover:translate-x-1" />
                 </button>
               </SignInButton>
@@ -624,7 +627,7 @@ export default function Home() {
               <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 data
               </span>
-              . Here’s what it coughed up.
+              . Here's what it coughed up.
             </p>
 
           </div>
@@ -657,7 +660,7 @@ export default function Home() {
               The Solution
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Study smarter (or dumber — Gru doesn’t judge). Turn your messy notes
+              Study smarter (or dumber — Gru doesn't judge). Turn your messy notes
               into fun, interactive quizzes that actually help you remember stuff.
             </p>
           </div>
