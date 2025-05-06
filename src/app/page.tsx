@@ -36,6 +36,17 @@ import MessageSender from '../components/MessageSender';
 
 import { useAuth } from '@clerk/nextjs';
 
+type FileResponse = {
+  success: boolean;
+  serverResponse: string;
+  fileDetails?: {
+    name: string;
+    type: string;
+    size: number;
+    path: string;
+  };
+};
+
 export default function Home() {
 
   const { getToken } = useAuth();
@@ -52,6 +63,8 @@ export default function Home() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<string>('');
+  const [uploadError, setUploadError] = useState<string>('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,24 +82,39 @@ export default function Home() {
   }, []);
 
   const handleFileUpload = async (file: File) => {
+    setIsLoading(true);
+    setUploadStatus('');
+    setUploadError('');
+    
     const formData = new FormData();
     formData.append('file', file);
-
-    const res = await fetch('http://localhost:5000/upload', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDExMUFBQSIsImtpZCI6Imluc18ydzh5RVhLaHlObFFsblVjMERyQjI4eEI4SDAiLCJ0eXAiOiJKV1QifQ.eyJhenAiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJleHAiOjE3NDU1MTI4OTUsImZ2YSI6WzQ0OCwtMV0sImlhdCI6MTc0NTUxMjgzNSwiaXNzIjoiaHR0cHM6Ly9yZWxheGluZy1mb3hob3VuZC04OC5jbGVyay5hY2NvdW50cy5kZXYiLCJuYmYiOjE3NDU1MTI4MjUsInNpZCI6InNlc3NfMndBWWMyMWpJVDJZTE9FWkxtd0ptRXZjNW80Iiwic3ViIjoidXNlcl8ydzh5c3diY0tYS1RTNkNqWlV3WXJIaHU0TEciLCJ2IjoyfQ.gbJN3yg-vVU6laNXd1j-aGnMuG6lNd7cGbGag-ssz3vsGwGZDrYC3l7hNMziA-F4shMHqmsnZ43SNtf2kQpnLzZyqfjsG38uFI4oGpgFMUJdo2vqPlpRimpZHzBCXdWMHq96hnGaEpaUtob1iHodY2_bsbDqc372w-H9BaUYoGqkZzpgC2_1Ud-dvt19DhEIyk6sVy7ht4hXArybMLvAukq7GhnLfLum272bYbgwR3Hrtzt56oCKJxqzAI9UInQXIppxAy46yplNGfTrbV19g5gVISzIo5u3XLE0dRCBniiqNTln5Em2OEo23G32yTooHEfpaO5dMYjHtYDfLvux_Q`
-      },
-      body: formData
-    });
-
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(`Something went wrong on the server: ${JSON.stringify(error)}`);
+    
+    try {
+      const res = await fetch('http://localhost:5000/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const data: FileResponse = await res.json();
+      
+      if (data.success) {
+        setFileUploaded(true);
+        setUploadStatus(data.serverResponse);
+        // For images, you can display the uploaded file
+        if (data.fileDetails?.type.startsWith('image/')) {
+          setUploadStatus(prev => `${prev}\nView at: http://localhost:5000${data.fileDetails?.path}`);
+        }
+      } else {
+        setUploadError(data.serverResponse || 'Upload failed');
+        setFileUploaded(false);
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setUploadError('Failed to upload file. Please try again.');
+      setFileUploaded(false);
+    } finally {
+      setIsLoading(false);
     }
-
-    const data = await res.json();
-    console.log('Success:', data);
   };
 
 
@@ -816,10 +844,11 @@ export default function Home() {
 
               {!fileUploaded ? (
                 <div
-                  className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isDragging
-                    ? 'border-indigo-500'
-                    : 'border-gray-300 dark:border-zinc-700'
-                    }`}
+                  className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${
+                    isDragging
+                      ? 'border-indigo-500'
+                      : 'border-gray-300 dark:border-zinc-700'
+                  }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
@@ -834,11 +863,18 @@ export default function Home() {
                         handleFileUpload(e.target.files[0]);
                       }
                     }}
+                    accept="image/*,application/pdf"
                   />
                   <FileUp className="w-12 h-12 mx-auto mb-4 text-indigo-500" />
                   <p className="text-gray-600 dark:text-gray-300">
                     Drag and drop your file here or click to browse
                   </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Supported files: Images and PDFs
+                  </p>
+                  {uploadError && (
+                    <p className="text-red-500 mt-2 text-sm">{uploadError}</p>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-8">
@@ -865,11 +901,17 @@ export default function Home() {
                       <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                         File Uploaded Successfully!
                       </h4>
-                      <p className="text-gray-500 dark:text-gray-400 mb-4">
-                        Your document is being processed by Gru AI.
-                      </p>
+                      {uploadStatus && (
+                        <p className="text-gray-600 dark:text-gray-300 mb-4 whitespace-pre-line">
+                          {uploadStatus}
+                        </p>
+                      )}
                       <button
-                        onClick={() => setFileUploaded(false)}
+                        onClick={() => {
+                          setFileUploaded(false);
+                          setUploadStatus('');
+                          setUploadError('');
+                        }}
                         className="px-4 py-2 rounded-full text-sm text-indigo-600 dark:text-indigo-400 border border-indigo-600 dark:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
                       >
                         Upload Another Document
