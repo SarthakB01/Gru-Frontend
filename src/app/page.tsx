@@ -31,6 +31,8 @@ import {
 } from '@clerk/nextjs';
 
 
+import MessageSender from '../components/MessageSender';
+
 
 import { useAuth } from '@clerk/nextjs';
 
@@ -349,6 +351,8 @@ export default function Home() {
 
 
 
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-zinc-900 dark:to-black text-gray-900 dark:text-gray-100">
       {/* Animated Background Elements */}
@@ -482,6 +486,12 @@ export default function Home() {
           </div>
         )}
       </nav>
+
+
+      <div className="container mx-auto py-8">
+        <h1 className="text-2xl font-bold mb-6 text-center">TypeScript Frontend-Backend Communication</h1>
+        <MessageSender />
+      </div>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 md:py-28">
