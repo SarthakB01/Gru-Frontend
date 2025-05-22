@@ -30,9 +30,8 @@ import {
   UserButton,
 } from '@clerk/nextjs';
 
-
 import MessageSender from '../components/MessageSender';
-
+import TextSummarizer from '../components/TextSummarizer';
 
 import { useAuth } from '@clerk/nextjs';
 
@@ -117,9 +116,6 @@ export default function Home() {
     }
   };
 
-
-
-
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
     setIsDragging(true);
@@ -139,7 +135,6 @@ export default function Home() {
       handleFileUpload(e.dataTransfer.files[0]);
     }
   };
-
 
   const testimonials = [
     {
@@ -175,7 +170,6 @@ export default function Home() {
       rating: 3,
     },
   ];
-
 
   const features = [
     {
@@ -377,10 +371,6 @@ export default function Home() {
     </a>
   );
 
-
-
-
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-zinc-900 dark:to-black text-gray-900 dark:text-gray-100">
       {/* Animated Background Elements */}
@@ -515,6 +505,10 @@ export default function Home() {
         )}
       </nav>
 
+      {/* Add TextSummarizer at the top */}
+      <div className="container mx-auto px-4 py-8">
+        <TextSummarizer />
+      </div>
 
       <div className="container mx-auto py-8">
         <h1 className="text-2xl font-bold mb-6 text-center">TypeScript Frontend-Backend Communication</h1>
@@ -808,9 +802,9 @@ export default function Home() {
                   </li>
                 </ul>
                 <div className="mt-8 text-center">
-                  <button className="px-6 py-3 rounded-full shadow-md text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform transition-all duration-300 hover:scale-105">
+                  <a href="#demo" className="inline-block px-6 py-3 rounded-full shadow-md text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform transition-all duration-300 hover:scale-105">
                     Start Using Gru Today
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
