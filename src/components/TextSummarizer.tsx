@@ -1,12 +1,23 @@
 import { useState } from 'react';
-import { FileText, Upload, X } from 'lucide-react';
+import { FileText, Upload, X, Brain, Volume2 } from 'lucide-react';
+
+type ProcessingType = 'summary' | 'quiz' | 'speech';
+
+interface QuizQuestion {
+  question: string;
+  options: string[];
+  correct: string;
+}
 
 export default function TextSummarizer() {
   const [text, setText] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [summary, setSummary] = useState('');
+  const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [processingType, setProcessingType] = useState<ProcessingType>('summary');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -33,7 +44,7 @@ export default function TextSummarizer() {
     }
   };
 
-  const handleSummarize = async () => {
+  const handleProcess = async () => {
     if (!text.trim() && !selectedFile) {
       setError('Please enter text or upload a document');
       return;
@@ -41,10 +52,15 @@ export default function TextSummarizer() {
 
     setIsLoading(true);
     setError('');
+    setSummary('');
+    setQuiz([]);
+    setAudioUrl(null);
     
     try {
+      let textToProcess = text;
+      
       if (selectedFile) {
-        // Handle document summarization
+        // Handle document processing
         const formData = new FormData();
         formData.append('document', selectedFile);
         
@@ -55,45 +71,113 @@ export default function TextSummarizer() {
 
         const data = await response.json();
         
-        if (response.ok) {
-          setSummary(data.summary);
-        } else {
-          setError(data.error || 'Failed to summarize document');
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to process document');
         }
-      } else {
-        // Handle text summarization
-        const response = await fetch('http://localhost:5000/api/ai/summarize', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ text }),
-        });
-
-        const data = await response.json();
         
-        if (response.ok) {
-          setSummary(data.summary);
-        } else {
-          setError(data.error || 'Failed to summarize text');
-        }
+        textToProcess = data.summary;
+      }
+
+      // Process based on selected type
+      switch (processingType) {
+        case 'summary':
+          if (!selectedFile) {
+            const response = await fetch('http://localhost:5000/api/ai/summarize', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: textToProcess }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+            setSummary(data.summary);
+          } else {
+            setSummary(textToProcess);
+          }
+          break;
+
+        case 'quiz':
+          const quizResponse = await fetch('http://localhost:5000/api/ai/generate-quiz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: textToProcess }),
+          });
+          const quizData = await quizResponse.json();
+          if (!quizResponse.ok) throw new Error(quizData.error);
+          setQuiz(quizData.quiz.questions);
+          break;
+
+        case 'speech':
+          const speechResponse = await fetch('http://localhost:5000/api/ai/text-to-speech', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: textToProcess }),
+          });
+          const speechData = await speechResponse.json();
+          if (!speechResponse.ok) throw new Error(speechData.error);
+          const audioBlob = new Blob(
+            [Buffer.from(speechData.audio, 'base64')],
+            { type: speechData.format }
+          );
+          const url = URL.createObjectURL(audioBlob);
+          setAudioUrl(url);
+          break;
       }
     } catch (err) {
-      setError('Failed to connect to the server');
+      setError(err instanceof Error ? err.message : 'Failed to process');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const removeFile = () => {
-    setSelectedFile(null);
-  };
-
   return (
     <div className="w-full max-w-2xl mx-auto p-4 space-y-6">
       <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6">
-        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Text Summarizer</h2>
+        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Text Processor</h2>
         
+        {/* Processing Type Selection */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Choose Processing Type
+          </label>
+          <div className="grid grid-cols-3 gap-4">
+            <button
+              onClick={() => setProcessingType('summary')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                processingType === 'summary'
+                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30'
+                  : 'border-gray-200 dark:border-zinc-700 hover:border-indigo-300'
+              }`}
+            >
+              <FileText className="w-6 h-6 mx-auto mb-2 text-indigo-500" />
+              <span className="text-sm font-medium">Summary</span>
+            </button>
+            
+            <button
+              onClick={() => setProcessingType('quiz')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                processingType === 'quiz'
+                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30'
+                  : 'border-gray-200 dark:border-zinc-700 hover:border-indigo-300'
+              }`}
+            >
+              <Brain className="w-6 h-6 mx-auto mb-2 text-indigo-500" />
+              <span className="text-sm font-medium">Quiz</span>
+            </button>
+            
+            <button
+              onClick={() => setProcessingType('speech')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                processingType === 'speech'
+                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30'
+                  : 'border-gray-200 dark:border-zinc-700 hover:border-indigo-300'
+              }`}
+            >
+              <Volume2 className="w-6 h-6 mx-auto mb-2 text-indigo-500" />
+              <span className="text-sm font-medium">Speech</span>
+            </button>
+          </div>
+        </div>
+
         {/* Text Input */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -102,7 +186,7 @@ export default function TextSummarizer() {
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Enter text to summarize..."
+            placeholder="Enter text to process..."
             className="w-full h-32 p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
@@ -134,7 +218,7 @@ export default function TextSummarizer() {
                   {selectedFile.name}
                 </span>
                 <button
-                  onClick={removeFile}
+                  onClick={() => setSelectedFile(null)}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
                   <X size={16} />
@@ -144,13 +228,13 @@ export default function TextSummarizer() {
           </div>
         </div>
 
-        {/* Summarize Button */}
+        {/* Process Button */}
         <button
-          onClick={handleSummarize}
+          onClick={handleProcess}
           disabled={isLoading || (!text.trim() && !selectedFile)}
           className="w-full px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 disabled:opacity-50 transition-all"
         >
-          {isLoading ? 'Summarizing...' : 'Summarize'}
+          {isLoading ? 'Processing...' : 'Process'}
         </button>
 
         {/* Error Display */}
@@ -160,13 +244,50 @@ export default function TextSummarizer() {
           </div>
         )}
 
-        {/* Summary Display */}
+        {/* Results Display */}
         {summary && (
           <div className="mt-6 p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
             <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Summary:</h3>
             <div className="prose dark:prose-invert max-w-none">
               <p>{summary}</p>
             </div>
+          </div>
+        )}
+
+        {/* Quiz Display */}
+        {quiz.length > 0 && (
+          <div className="mt-6 p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
+            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Quiz:</h3>
+            <div className="space-y-4">
+              {quiz.map((question, index) => (
+                <div key={index} className="p-4 bg-white dark:bg-zinc-800 rounded-lg">
+                  <p className="font-medium mb-3">{question.question}</p>
+                  <div className="space-y-2">
+                    {question.options.map((option, optIndex) => (
+                      <label key={optIndex} className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name={`question-${index}`}
+                          className="text-indigo-500 focus:ring-indigo-500"
+                        />
+                        <span>{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Audio Player */}
+        {audioUrl && (
+          <div className="mt-6 p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
+            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Audio:</h3>
+            <audio controls className="w-full">
+              <source src={audioUrl} type="audio/wav" />
+              Your browser does not support the audio element.
+            </audio>
           </div>
         )}
       </div>
