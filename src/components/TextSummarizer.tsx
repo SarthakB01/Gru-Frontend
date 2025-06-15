@@ -4,9 +4,17 @@ import { FileText, Upload, X, Brain, Volume2 } from 'lucide-react';
 type ProcessingType = 'summary' | 'quiz' | 'speech';
 
 interface QuizQuestion {
+  id: number;
   question: string;
   options: string[];
   correct: string;
+}
+
+interface QuizAnswer {
+  questionId: number;
+  question: string;
+  selectedAnswer: string;
+  correctAnswer: string;
 }
 
 export default function TextSummarizer() {
@@ -14,6 +22,8 @@ export default function TextSummarizer() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [summary, setSummary] = useState('');
   const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
+  const [quizResults, setQuizResults] = useState<any>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -54,6 +64,8 @@ export default function TextSummarizer() {
     setError('');
     setSummary('');
     setQuiz([]);
+    setSelectedAnswers({});
+    setQuizResults(null);
     setAudioUrl(null);
     
     try {
@@ -126,6 +138,38 @@ export default function TextSummarizer() {
       setError(err instanceof Error ? err.message : 'Failed to process');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleAnswerSelect = (questionId: number, answer: string) => {
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
+  };
+
+  const handleSubmitQuiz = async () => {
+    if (quiz.length === 0) return;
+
+    const answers: QuizAnswer[] = quiz.map(q => ({
+      questionId: q.id,
+      question: q.question,
+      selectedAnswer: selectedAnswers[q.id] || '',
+      correctAnswer: q.correct
+    }));
+
+    try {
+      const response = await fetch('http://localhost:5000/api/ai/verify-answers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      setQuizResults(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to verify answers');
     }
   };
 
@@ -259,15 +303,18 @@ export default function TextSummarizer() {
           <div className="mt-6 p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
             <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Quiz:</h3>
             <div className="space-y-4">
-              {quiz.map((question, index) => (
-                <div key={index} className="p-4 bg-white dark:bg-zinc-800 rounded-lg">
+              {quiz.map((question) => (
+                <div key={question.id} className="p-4 bg-white dark:bg-zinc-800 rounded-lg">
                   <p className="font-medium mb-3">{question.question}</p>
                   <div className="space-y-2">
                     {question.options.map((option, optIndex) => (
                       <label key={optIndex} className="flex items-center space-x-2">
                         <input
                           type="radio"
-                          name={`question-${index}`}
+                          name={`question-${question.id}`}
+                          value={option}
+                          checked={selectedAnswers[question.id] === option}
+                          onChange={() => handleAnswerSelect(question.id, option)}
                           className="text-indigo-500 focus:ring-indigo-500"
                         />
                         <span>{option}</span>
@@ -276,6 +323,39 @@ export default function TextSummarizer() {
                   </div>
                 </div>
               ))}
+              <button
+                onClick={handleSubmitQuiz}
+                className="w-full px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all"
+              >
+                Submit Quiz
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Quiz Results */}
+        {quizResults && (
+          <div className="mt-6 p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
+            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Quiz Results:</h3>
+            <div className="space-y-4">
+              {quizResults.results.map((result: any) => (
+                <div key={result.questionId} className="p-4 bg-white dark:bg-zinc-800 rounded-lg">
+                  <p className="font-medium mb-2">{result.question}</p>
+                  <p className={`mb-1 ${result.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                    Your answer: {result.selectedAnswer}
+                  </p>
+                  {!result.isCorrect && (
+                    <p className="text-gray-600">Correct answer: {result.correctAnswer}</p>
+                  )}
+                  <p className="text-sm text-gray-500 mt-2">{result.feedback}</p>
+                </div>
+              ))}
+              <div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+                <h4 className="font-medium mb-2">Summary</h4>
+                <p>Score: {quizResults.summary.score}/{quizResults.summary.total}</p>
+                <p>Percentage: {quizResults.summary.percentage}%</p>
+                <p className="mt-2">{quizResults.summary.feedback}</p>
+              </div>
             </div>
           </div>
         )}
