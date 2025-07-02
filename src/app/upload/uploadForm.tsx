@@ -6,10 +6,21 @@ import { UploadCloud } from "lucide-react";
 export default function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<string>("");
+  const [charCount, setCharCount] = useState<number | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setFile(e.target.files[0]);
+      setCharCount(null);
+      // Try to read text content for .txt files only (for demo)
+      const selectedFile = e.target.files[0];
+      if (selectedFile && selectedFile.type === "text/plain") {
+        const text = await selectedFile.text();
+        setCharCount(text.length);
+      } else {
+        // For PDF/DOCX, we can't get char count in browser before upload
+        setCharCount(null);
+      }
     }
   };
 
@@ -17,12 +28,12 @@ export default function UploadForm() {
     if (!file) return;
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("document", file);
 
     setStatus("Uploading...");
 
     try {
-      const res = await fetch("http://localhost:5000/upload", {
+      const res = await fetch("http://localhost:5000/api/ai/summarize-document", {
         method: "POST",
         body: formData,
       });
@@ -31,7 +42,13 @@ export default function UploadForm() {
       if (res.ok) {
         setStatus(`✅ ${data.message}`);
       } else {
-        setStatus(`❌ ${data.error || "Upload failed"}`);
+        if (data.currentCharCount && data.maxAllowedCharCount) {
+          setStatus(
+            `❌ ${data.error}\nYour document has ${data.currentCharCount} characters. The maximum allowed is ${data.maxAllowedCharCount}. Please upload a smaller file.`
+          );
+        } else {
+          setStatus(`❌ ${data.error || "Upload failed"}`);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -50,9 +67,16 @@ export default function UploadForm() {
           type="file"
           onChange={handleFileChange}
           className="hidden"
-          accept=".pdf,.docx"
+          accept=".pdf,.docx,.txt"
         />
       </label>
+
+      {file && charCount !== null && (
+        <p className="text-sm text-blue-700">Current character count: {charCount}</p>
+      )}
+      {file && charCount === null && (
+        <p className="text-sm text-gray-500">Character count will be shown after upload for PDF/DOCX files.</p>
+      )}
 
       <button
         onClick={handleUpload}

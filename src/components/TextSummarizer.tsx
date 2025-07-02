@@ -84,9 +84,20 @@ export default function TextSummarizer() {
         const data = await response.json();
         
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to process document');
+          let errorMsg = data.error || 'Failed to process document';
+          if (data.details) {
+            errorMsg += `\n${data.details}`;
+          }
+          // Only append char count if not already in details
+          const charCountLine = `Your document has ${data.currentCharCount} characters. The maximum allowed is ${data.maxAllowedCharCount}.`;
+          if (
+            data.currentCharCount && data.maxAllowedCharCount &&
+            (!data.details || !data.details.includes('Your document has'))
+          ) {
+            errorMsg += `\n${charCountLine}`;
+          }
+          throw new Error(errorMsg);
         }
-        
         textToProcess = data.summary;
       }
 
