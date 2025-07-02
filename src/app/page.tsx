@@ -33,7 +33,7 @@ import {
 import MessageSender from '../components/MessageSender';
 import DocumentProcessor from '../components/DocumentProcessor';
 
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useClerk } from '@clerk/nextjs';
 
 type FileResponse = {
   success: boolean;
@@ -48,7 +48,8 @@ type FileResponse = {
 
 export default function Home() {
 
-  const { getToken } = useAuth();
+  const { getToken, isSignedIn } = useAuth();
+  const clerk = useClerk();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [fileUploaded, setFileUploaded] = useState(false);
@@ -505,10 +506,10 @@ export default function Home() {
         )}
       </nav>
 
-      <div className="container mx-auto py-8">
+      {/* <div className="container mx-auto py-8">
         <h1 className="text-2xl font-bold mb-6 text-center">TypeScript Frontend-Backend Communication</h1>
         <MessageSender />
-      </div>
+      </div> */}
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 md:py-28">
@@ -532,33 +533,23 @@ export default function Home() {
 
           {/* CTA Button */}
           <div className="flex justify-center mb-12">
-            {/* Show if NOT signed in */}
-            <SignedOut>
-              <SignInButton mode='modal'>
-                <button
-                  onClick={() => setShowSignup(true)}
-                  className="inline-flex items-center justify-center rounded-full text-md font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 px-8 py-3.5 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transform hover:scale-105"
-                >
-                  Get Started – It's Free
-                  <ChevronRight className="w-5 h-5 ml-2 transition-all duration-300 group-hover:translate-x-1" />
-                </button>
-              </SignInButton>
-
-            </SignedOut>
-
-            {/* Show if signed in */}
-            <SignedIn>
-              <a
-                href="#demo"
-                className="inline-flex items-center justify-center rounded-full text-md font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 px-8 py-3.5 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 transform hover:scale-105"
-              >
-                Jump to Demo
-                <ChevronRight className="w-5 h-5 ml-2 transition-all duration-300 group-hover:translate-x-1" />
-              </a>
-            </SignedIn>
+            <button
+              onClick={() => {
+                if (isSignedIn) {
+                  const demoSection = document.getElementById('demo');
+                  if (demoSection) {
+                    demoSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                } else {
+                  clerk.openSignIn();
+                }
+              }}
+              className="inline-flex items-center justify-center rounded-full text-md font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 px-8 py-3.5 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 transform hover:scale-105"
+            >
+              Get started - it's free!
+              <ChevronRight className="w-5 h-5 ml-2 transition-all duration-300 group-hover:translate-x-1" />
+            </button>
           </div>
-
-
 
           {/* Browser mockup */}
           <div className="rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 shadow-xl border border-gray-200 dark:border-zinc-700 overflow-hidden max-w-4xl mx-auto transform transition-all duration-500 hover:scale-[1.02]">
@@ -704,297 +695,314 @@ export default function Home() {
       {/* Demo Section */}
       <section id="demo" className="py-16 bg-white  dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-700 ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-gray-100 leading-tight max-w-xl mx-auto">
-              Wanna see Gru in action?{" "}
-              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                Try it yourself.
-              </span>
-            </h2>
-
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Upload a sample document to see how Gru can transform your study
-              materials into an interactive learning experience.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Upload Section */}
-            <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700">
-              <h3 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">
-                Upload Your Document
-              </h3>
-
-              {!fileUploaded ? (
-                <div
-                  className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${
-                    isDragging
-                      ? 'border-indigo-500'
-                      : 'border-gray-300 dark:border-zinc-700'
-                  }`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    style={{ display: 'none' }}
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        handleFileUpload(e.target.files[0]);
-                      }
-                    }}
-                    accept="image/*,application/pdf"
-                  />
-                  <FileUp className="w-12 h-12 mx-auto mb-4 text-indigo-500" />
-                  <p className="text-gray-600 dark:text-gray-300">
-                    Drag and drop your file here or click to browse
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                    Supported files: Images and PDFs
-                  </p>
-                  {uploadError && (
-                    <p className="text-red-500 mt-2 text-sm">{uploadError}</p>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  {isLoading ? (
-                    <div className="flex justify-center items-center space-x-2">
-                      <div className="w-8 h-8 border-4 border-t-indigo-500 border-gray-200 rounded-full animate-spin"></div>
-                      <span className="text-gray-600 dark:text-gray-300">Processing...</span>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900">
-                        <svg
-                          className="w-8 h-8 text-green-500 dark:text-green-400"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                        File Uploaded Successfully!
-                      </h4>
-                      {uploadStatus && (
-                        <p className="text-gray-600 dark:text-gray-300 mb-4 whitespace-pre-line">
-                          {uploadStatus}
-                        </p>
-                      )}
-                      <button
-                        onClick={() => {
-                          setFileUploaded(false);
-                          setUploadStatus('');
-                          setUploadError('');
-                        }}
-                        className="px-4 py-2 rounded-full text-sm text-indigo-600 dark:text-indigo-400 border border-indigo-600 dark:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
-                      >
-                        Upload Another Document
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-
-              <div className="mt-6">
-                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
-                  What happens next?
-                </h4>
-                <ol className="space-y-3 text-gray-600 dark:text-gray-300">
-                  <li className="flex">
-                    <span className="mr-2 font-bold">1.</span>
-                    <span>
-                      Gru analyzes your document to extract key concepts and relationships
-                    </span>
-                  </li>
-                  <li className="flex">
-                    <span className="mr-2 font-bold">2.</span>
-                    <span>
-                      Generates customized quizzes based on the content
-                    </span>
-                  </li>
-                  <li className="flex">
-                    <span className="mr-2 font-bold">3.</span>
-                    <span>
-                      Creates an interactive study environment for maximum retention
-                    </span>
-                  </li>
-                </ol>
+          <SignedOut>
+            <div className="text-center py-24">
+              <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-gray-100 mb-6">
+                Please log in or sign up to use Gru's features
+              </h2>
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <SignInButton mode="modal">
+                  <button className="px-8 py-3.5 rounded-full text-md font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transform hover:scale-105">
+                    Log In
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button className="px-8 py-3.5 rounded-full text-md font-semibold bg-gradient-to-r from-purple-600 to-indigo-500 text-white hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transform hover:scale-105">
+                    Sign Up
+                  </button>
+                </SignUpButton>
               </div>
             </div>
-
-            {/* Tabs Section */}
-            <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700">
-              <Tabs.Root defaultValue="quiz" className="w-full">
-                <Tabs.List className="flex mb-6 bg-gray-100 dark:bg-zinc-800 rounded-lg p-1">
-                  <Tabs.Trigger
-                    value="quiz"
-                    className="flex-1 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:shadow-sm"
-                  >
-                    Quiz Demo
-                  </Tabs.Trigger>
-                  <Tabs.Trigger
-                    value="chat"
-                    className="flex-1 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:shadow-sm"
-                  >
-                    Chat Demo
-                  </Tabs.Trigger>
-                </Tabs.List>
-
-                <Tabs.Content value="quiz" className="outline-none">
-                  <div className="border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden shadow-md">
-                    <div className="bg-gray-50 dark:bg-zinc-800 px-4 py-3 border-b border-gray-200 dark:border-zinc-700">
-                      <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                        Biology Quiz - Cell Structure
-                      </h3>
-                    </div>
-                    <div className="p-4 bg-white dark:bg-zinc-900">
-                      <div className="mb-6">
-                        <p className="text-gray-800 dark:text-gray-200 mb-3">
-                          What is the primary function of mitochondria in
-                          eukaryotic cells?
-                        </p>
-                        <div className="space-y-2">
-                          <div className="flex items-center">
-                            <input
-                              type="radio"
-                              id="option1"
-                              name="answer"
-                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
-                            />
-                            <label
-                              htmlFor="option1"
-                              className="ml-2 text-gray-700 dark:text-gray-300"
-                            >
-                              Protein synthesis
-                            </label>
-                          </div>
-                          <div className="flex items-center">
-                            <input
-                              type="radio"
-                              id="option2"
-                              name="answer"
-                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
-                            />
-                            <label
-                              htmlFor="option2"
-                              className="ml-2 text-gray-700 dark:text-gray-300"
-                            >
-                              Energy production (ATP)
-                            </label>
-                          </div>
-                          <div className="flex items-center">
-                            <input
-                              type="radio"
-                              id="option3"
-                              name="answer"
-                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
-                            />
-                            <label
-                              htmlFor="option3"
-                              className="ml-2 text-gray-700 dark:text-gray-300"
-                            >
-                              Lipid storage
-                            </label>
-                          </div>
-                          <div className="flex items-center">
-                            <input
-                              type="radio"
-                              id="option4"
-                              name="answer"
-                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
-                            />
-                            <label
-                              htmlFor="option4"
-                              className="ml-2 text-gray-700 dark:text-gray-300"
-                            >
-                              DNA replication
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex justify-between">
-                        <button className="px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
-                          Previous
-                        </button>
-                        <button className="px-4 py-2 rounded-lg text-sm text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-colors">
-                          Check Answer
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </Tabs.Content>
-
-                <Tabs.Content value="chat" className="outline-none">
-                  <div className="border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden shadow-md h-80 flex flex-col">
-                    <div className="bg-gray-50 dark:bg-zinc-800 px-4 py-3 border-b border-gray-200 dark:border-zinc-700">
-                      <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                        Ask about your content
-                      </h3>
-                    </div>
-                    <div className="flex-1 bg-white dark:bg-zinc-900 p-4 overflow-y-auto">
-                      <div className="space-y-4">
-                        <div className="flex items-start">
-                          <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-lg p-3 max-w-[80%]">
-                            <p className="text-gray-800 dark:text-gray-200">
-                              Hi there! I've analyzed your Biology notes. What
-                              would you like to know about cell structures?
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start justify-end">
-                          <div className="bg-gray-100 dark:bg-zinc-800 rounded-lg p-3 max-w-[80%]">
-                            <p className="text-gray-800 dark:text-gray-200">
-                              Can you explain the difference between mitochondria
-                              and chloroplasts?
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start">
-                          <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-lg p-3 max-w-[80%]">
-                            <p className="text-gray-800 dark:text-gray-200">
-                              Based on your notes: Mitochondria and chloroplasts
-                              are both organelles in eukaryotic cells, but they
-                              serve different functions. Mitochondria are present
-                              in almost all eukaryotic cells and produce energy
-                              through cellular respiration. Chloroplasts are found
-                              in plant cells and some algae and conduct
-                              photosynthesis to convert light into chemical
-                              energy.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-700 p-3">
-                      <div className="flex items-center">
-                        <input
-                          type="text"
-                          placeholder="Ask a question about your notes..."
-                          className="flex-1 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-4 py-2 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                        <button className="ml-2 p-2 rounded-lg bg-indigo-500 text-white hover:bg-indigo-600 transition-colors">
-                          <Send size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </Tabs.Content>
-              </Tabs.Root>
+          </SignedOut>
+          <SignedIn>
+            <div className="text-center mb-12">
+              <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-gray-100 leading-tight max-w-xl mx-auto">
+                Wanna see Gru in action?{' '}
+                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Try it yourself.
+                </span>
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                Upload a sample document to see how Gru can transform your study
+                materials into an interactive learning experience.
+              </p>
             </div>
-          </div>
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Upload Section */}
+              <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700">
+                <h3 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">
+                  Upload Your Document
+                </h3>
 
+                {!fileUploaded ? (
+                  <div
+                    className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${
+                      isDragging
+                        ? 'border-indigo-500'
+                        : 'border-gray-300 dark:border-zinc-700'
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handleFileUpload(e.target.files[0]);
+                        }
+                      }}
+                      accept="image/*,application/pdf"
+                    />
+                    <FileUp className="w-12 h-12 mx-auto mb-4 text-indigo-500" />
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Drag and drop your file here or click to browse
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                      Supported files: Images and PDFs
+                    </p>
+                    {uploadError && (
+                      <p className="text-red-500 mt-2 text-sm">{uploadError}</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    {isLoading ? (
+                      <div className="flex justify-center items-center space-x-2">
+                        <div className="w-8 h-8 border-4 border-t-indigo-500 border-gray-200 rounded-full animate-spin"></div>
+                        <span className="text-gray-600 dark:text-gray-300">Processing...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900">
+                          <svg
+                            className="w-8 h-8 text-green-500 dark:text-green-400"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                        <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                          File Uploaded Successfully!
+                        </h4>
+                        {uploadStatus && (
+                          <p className="text-gray-600 dark:text-gray-300 mb-4 whitespace-pre-line">
+                            {uploadStatus}
+                          </p>
+                        )}
+                        <button
+                          onClick={() => {
+                            setFileUploaded(false);
+                            setUploadStatus('');
+                            setUploadError('');
+                          }}
+                          className="px-4 py-2 rounded-full text-sm text-indigo-600 dark:text-indigo-400 border border-indigo-600 dark:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                        >
+                          Upload Another Document
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
 
-        </div >
-      </section >
+                <div className="mt-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
+                    What happens next?
+                  </h4>
+                  <ol className="space-y-3 text-gray-600 dark:text-gray-300">
+                    <li className="flex">
+                      <span className="mr-2 font-bold">1.</span>
+                      <span>
+                        Gru analyzes your document to extract key concepts and relationships
+                      </span>
+                    </li>
+                    <li className="flex">
+                      <span className="mr-2 font-bold">2.</span>
+                      <span>
+                        Generates customized quizzes based on the content
+                      </span>
+                    </li>
+                    <li className="flex">
+                      <span className="mr-2 font-bold">3.</span>
+                      <span>
+                        Creates an interactive study environment for maximum retention
+                      </span>
+                    </li>
+                  </ol>
+                </div>
+              </div>
+
+              {/* Tabs Section */}
+              <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700">
+                <Tabs.Root defaultValue="quiz" className="w-full">
+                  <Tabs.List className="flex mb-6 bg-gray-100 dark:bg-zinc-800 rounded-lg p-1">
+                    <Tabs.Trigger
+                      value="quiz"
+                      className="flex-1 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:shadow-sm"
+                    >
+                      Quiz Demo
+                    </Tabs.Trigger>
+                    <Tabs.Trigger
+                      value="chat"
+                      className="flex-1 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:shadow-sm"
+                    >
+                      Chat Demo
+                    </Tabs.Trigger>
+                  </Tabs.List>
+
+                  <Tabs.Content value="quiz" className="outline-none">
+                    <div className="border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden shadow-md">
+                      <div className="bg-gray-50 dark:bg-zinc-800 px-4 py-3 border-b border-gray-200 dark:border-zinc-700">
+                        <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                          Biology Quiz - Cell Structure
+                        </h3>
+                      </div>
+                      <div className="p-4 bg-white dark:bg-zinc-900">
+                        <div className="mb-6">
+                          <p className="text-gray-800 dark:text-gray-200 mb-3">
+                            What is the primary function of mitochondria in
+                            eukaryotic cells?
+                          </p>
+                          <div className="space-y-2">
+                            <div className="flex items-center">
+                              <input
+                                type="radio"
+                                id="option1"
+                                name="answer"
+                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
+                              />
+                              <label
+                                htmlFor="option1"
+                                className="ml-2 text-gray-700 dark:text-gray-300"
+                              >
+                                Protein synthesis
+                              </label>
+                            </div>
+                            <div className="flex items-center">
+                              <input
+                                type="radio"
+                                id="option2"
+                                name="answer"
+                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
+                              />
+                              <label
+                                htmlFor="option2"
+                                className="ml-2 text-gray-700 dark:text-gray-300"
+                              >
+                                Energy production (ATP)
+                              </label>
+                            </div>
+                            <div className="flex items-center">
+                              <input
+                                type="radio"
+                                id="option3"
+                                name="answer"
+                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
+                              />
+                              <label
+                                htmlFor="option3"
+                                className="ml-2 text-gray-700 dark:text-gray-300"
+                              >
+                                Lipid storage
+                              </label>
+                            </div>
+                            <div className="flex items-center">
+                              <input
+                                type="radio"
+                                id="option4"
+                                name="answer"
+                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-600"
+                              />
+                              <label
+                                htmlFor="option4"
+                                className="ml-2 text-gray-700 dark:text-gray-300"
+                              >
+                                DNA replication
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex justify-between">
+                          <button className="px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
+                            Previous
+                          </button>
+                          <button className="px-4 py-2 rounded-lg text-sm text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-colors">
+                            Check Answer
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </Tabs.Content>
+
+                  <Tabs.Content value="chat" className="outline-none">
+                    <div className="border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden shadow-md h-80 flex flex-col">
+                      <div className="bg-gray-50 dark:bg-zinc-800 px-4 py-3 border-b border-gray-200 dark:border-zinc-700">
+                        <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                          Ask about your content
+                        </h3>
+                      </div>
+                      <div className="flex-1 bg-white dark:bg-zinc-900 p-4 overflow-y-auto">
+                        <div className="space-y-4">
+                          <div className="flex items-start">
+                            <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-lg p-3 max-w-[80%]">
+                              <p className="text-gray-800 dark:text-gray-200">
+                                Hi there! I've analyzed your Biology notes. What
+                                would you like to know about cell structures?
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-start justify-end">
+                            <div className="bg-gray-100 dark:bg-zinc-800 rounded-lg p-3 max-w-[80%]">
+                              <p className="text-gray-800 dark:text-gray-200">
+                                Can you explain the difference between mitochondria
+                                and chloroplasts?
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-start">
+                            <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-lg p-3 max-w-[80%]">
+                              <p className="text-gray-800 dark:text-gray-200">
+                                Based on your notes: Mitochondria and chloroplasts
+                                are both organelles in eukaryotic cells, but they
+                                serve different functions. Mitochondria are present
+                                in almost all eukaryotic cells and produce energy
+                                through cellular respiration. Chloroplasts are found
+                                in plant cells and some algae and conduct
+                                photosynthesis to convert light into chemical
+                                energy.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-700 p-3">
+                        <div className="flex items-center">
+                          <input
+                            type="text"
+                            placeholder="Ask a question about your notes..."
+                            className="flex-1 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-4 py-2 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                          <button className="ml-2 p-2 rounded-lg bg-indigo-500 text-white hover:bg-indigo-600 transition-colors">
+                            <Send size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </Tabs.Content>
+                </Tabs.Root>
+              </div>
+            </div>
+          </SignedIn>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 relative overflow-hidden" >
