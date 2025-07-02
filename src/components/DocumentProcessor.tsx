@@ -1,14 +1,33 @@
 import { useState } from 'react';
-import { FileText, Brain, MessageSquare, Video } from 'lucide-react';
+import { FileText, Brain, Volume2, Upload, X } from 'lucide-react';
 
-type ProcessingOption = 'summary' | 'quiz' | 'model';
+type ProcessingOption = 'summary' | 'quiz' | 'speech';
+
+interface QuizQuestion {
+  id: number;
+  question: string;
+  options: string[];
+  correct: string;
+}
+
+interface QuizAnswer {
+  questionId: number;
+  question: string;
+  selectedAnswer: string;
+  correctAnswer: string;
+}
 
 export default function DocumentProcessor() {
+  const [text, setText] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [processingOption, setProcessingOption] = useState<ProcessingOption>('summary');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [result, setResult] = useState<any>(null);
+  const [summary, setSummary] = useState('');
+  const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
+  const [quizResults, setQuizResults] = useState<any>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -16,93 +35,160 @@ export default function DocumentProcessor() {
       // Check file type
       const allowedTypes = ['.pdf', '.docx', '.doc'];
       const fileType = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
-      
       if (!allowedTypes.includes(fileType)) {
         setError('Please upload a PDF or Word document');
         setSelectedFile(null);
         return;
       }
-      
       // Check file size (10MB limit)
       if (file.size > 10 * 1024 * 1024) {
         setError('File size should be less than 10MB');
         setSelectedFile(null);
         return;
       }
-      
       setSelectedFile(file);
       setError('');
     }
   };
 
   const handleProcess = async () => {
-    if (!selectedFile) {
-      setError('Please select a file first');
+    if (!text.trim() && !selectedFile) {
+      setError('Please enter text or upload a document');
       return;
     }
-
     setIsLoading(true);
     setError('');
-    
+    setSummary('');
+    setQuiz([]);
+    setSelectedAnswers({});
+    setQuizResults(null);
+    setAudioUrl(null);
     try {
-      const formData = new FormData();
-      formData.append('document', selectedFile);
-      
-      const response = await fetch(`http://localhost:5000/api/ai/summarize-document`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-      
-      if (response.ok) {
-        setResult({
-          type: 'summary',
-          content: data.summary
+      let textToProcess = text;
+      if (selectedFile) {
+        // Handle document processing
+        const formData = new FormData();
+        formData.append('document', selectedFile);
+        let endpoint = '';
+        if (processingOption === 'summary') {
+          endpoint = 'http://localhost:5000/api/ai/summarize-document';
+        } else if (processingOption === 'quiz') {
+          endpoint = 'http://localhost:5000/api/ai/generate-quiz';
+        } else if (processingOption === 'speech') {
+          endpoint = 'http://localhost:5000/api/ai/text-to-speech';
+        }
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          body: formData,
         });
-      } else {
-        setError(data.error || 'Failed to process document');
+        const data = await response.json();
+        if (!response.ok) {
+          let errorMsg = data.error || 'Failed to process document';
+          if (data.details) {
+            errorMsg += `\n${data.details}`;
+          }
+          if (data.currentCharCount && data.maxAllowedCharCount && (!data.details || !data.details.includes('Your document has'))) {
+            errorMsg += `\nYour document has ${data.currentCharCount} characters. The maximum allowed is ${data.maxAllowedCharCount}.`;
+          }
+          throw new Error(errorMsg);
+        }
+        if (processingOption === 'summary') {
+          setSummary(data.summary);
+        } else if (processingOption === 'quiz') {
+          setQuiz(data.quiz?.questions || []);
+        } else if (processingOption === 'speech') {
+          const audioBlob = new Blob([
+            Buffer.from(data.audio, 'base64')
+          ], { type: data.format });
+          const url = URL.createObjectURL(audioBlob);
+          setAudioUrl(url);
+        }
+        return;
+      }
+      // If no file, process text
+      if (processingOption === 'summary') {
+        const response = await fetch('http://localhost:5000/api/ai/summarize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: textToProcess }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          if (data.actualLength) {
+            throw new Error(`${data.error} (Your input: ${data.actualLength} characters)`);
+          }
+          throw new Error(data.error);
+        }
+        setSummary(data.summary);
+      } else if (processingOption === 'quiz') {
+        const quizResponse = await fetch('http://localhost:5000/api/ai/generate-quiz', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: textToProcess }),
+        });
+        const quizData = await quizResponse.json();
+        if (!quizResponse.ok) {
+          if (quizData.actualLength) {
+            throw new Error(`${quizData.error} (Your input: ${quizData.actualLength} characters)`);
+          }
+          throw new Error(quizData.error);
+        }
+        setQuiz(quizData.quiz.questions);
+      } else if (processingOption === 'speech') {
+        const speechResponse = await fetch('http://localhost:5000/api/ai/text-to-speech', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: textToProcess }),
+        });
+        const speechData = await speechResponse.json();
+        if (!speechResponse.ok) throw new Error(speechData.error);
+        const audioBlob = new Blob([
+          Buffer.from(speechData.audio, 'base64')
+        ], { type: speechData.format });
+        const url = URL.createObjectURL(audioBlob);
+        setAudioUrl(url);
       }
     } catch (err) {
-      setError('Failed to connect to the server');
+      setError(err instanceof Error ? err.message : 'Failed to process');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleAnswerSelect = (questionId: number, answer: string) => {
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
+  };
+
+  const handleSubmitQuiz = async () => {
+    if (quiz.length === 0) return;
+    const answers: QuizAnswer[] = quiz.map(q => ({
+      questionId: q.id,
+      question: q.question,
+      selectedAnswer: selectedAnswers[q.id] || '',
+      correctAnswer: q.correct
+    }));
+    try {
+      const response = await fetch('http://localhost:5000/api/ai/verify-answers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      setQuizResults(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to verify answers');
     }
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto p-6 space-y-6">
       <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6">
-        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Process Your Document</h2>
-        
-        {/* File Upload Section */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Upload Document
-          </label>
-          <div className="flex items-center space-x-4">
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx"
-              onChange={handleFileChange}
-              className="hidden"
-              id="document-upload"
-            />
-            <button
-              onClick={() => document.getElementById('document-upload')?.click()}
-              className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors"
-            >
-              Choose File
-            </button>
-            {selectedFile && (
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                {selectedFile.name}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Processing Options */}
+        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Process Your Document or Text</h2>
+        {/* Processing Option Selection */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Choose Processing Option
@@ -117,9 +203,8 @@ export default function DocumentProcessor() {
               }`}
             >
               <FileText className="w-6 h-6 mx-auto mb-2 text-indigo-500" />
-              <span className="text-sm font-medium">Text Summary</span>
+              <span className="text-sm font-medium">Summary</span>
             </button>
-            
             <button
               onClick={() => setProcessingOption('quiz')}
               className={`p-4 rounded-lg border-2 transition-all ${
@@ -129,78 +214,161 @@ export default function DocumentProcessor() {
               }`}
             >
               <Brain className="w-6 h-6 mx-auto mb-2 text-indigo-500" />
-              <span className="text-sm font-medium">MCQ Quiz</span>
+              <span className="text-sm font-medium">Quiz</span>
             </button>
-            
             <button
-              onClick={() => setProcessingOption('model')}
+              onClick={() => setProcessingOption('speech')}
               className={`p-4 rounded-lg border-2 transition-all ${
-                processingOption === 'model'
+                processingOption === 'speech'
                   ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30'
                   : 'border-gray-200 dark:border-zinc-700 hover:border-indigo-300'
               }`}
             >
-              <Video className="w-6 h-6 mx-auto mb-2 text-indigo-500" />
-              <span className="text-sm font-medium">3D Model</span>
+              <Volume2 className="w-6 h-6 mx-auto mb-2 text-indigo-500" />
+              <span className="text-sm font-medium">Speech</span>
             </button>
           </div>
         </div>
-
+        {/* Text Input */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Enter Text
+          </label>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Enter text to process..."
+            className="w-full h-32 p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <div className="text-xs text-gray-500 mt-1">Character count: {text.length}</div>
+        </div>
+        {/* File Upload */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Or Upload Document (PDF/Word)
+          </label>
+          <div className="flex items-center space-x-4">
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleFileChange}
+              className="hidden"
+              id="document-upload"
+            />
+            <button
+              onClick={() => document.getElementById('document-upload')?.click()}
+              className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors flex items-center space-x-2"
+            >
+              <Upload size={20} />
+              <span>Choose File</span>
+            </button>
+            {selectedFile && (
+              <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg">
+                <FileText size={20} className="text-indigo-500" />
+                <span className="text-sm text-gray-600 dark:text-gray-300">
+                  {selectedFile.name}
+                </span>
+                <button
+                  onClick={() => setSelectedFile(null)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
         {/* Process Button */}
         <button
           onClick={handleProcess}
-          disabled={isLoading || !selectedFile}
+          disabled={isLoading || (!text.trim() && !selectedFile)}
           className="w-full px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 disabled:opacity-50 transition-all"
         >
-          {isLoading ? 'Processing...' : 'Process Document'}
+          {isLoading ? 'Processing...' : 'Process'}
         </button>
-
+        {/* Error Display */}
         {error && (
           <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg">
             {error}
           </div>
         )}
-
         {/* Results Display */}
-        {result && (
+        {summary && (
           <div className="mt-6 p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
-            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Results:</h3>
-            {result.type === 'summary' && (
-              <div className="prose dark:prose-invert max-w-none">
-                <p>{result.content}</p>
-              </div>
-            )}
-            
-            {result.type === 'quiz' && (
-              <div className="space-y-4">
-                {result.content.map((question: any, index: number) => (
-                  <div key={index} className="p-4 bg-white dark:bg-zinc-800 rounded-lg">
-                    <p className="font-medium mb-3">{question.question}</p>
-                    <div className="space-y-2">
-                      {question.options.map((option: string, optIndex: number) => (
-                        <label key={optIndex} className="flex items-center space-x-2">
-                          <input
-                            type="radio"
-                            name={`question-${index}`}
-                            className="text-indigo-500 focus:ring-indigo-500"
-                          />
-                          <span>{option}</span>
-                        </label>
-                      ))}
-                    </div>
+            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Summary:</h3>
+            <div className="prose dark:prose-invert max-w-none">
+              <p>{summary}</p>
+            </div>
+          </div>
+        )}
+        {/* Quiz Display */}
+        {quiz.length > 0 && (
+          <div className="mt-6 p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
+            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Quiz:</h3>
+            <div className="space-y-4">
+              {quiz.map((question) => (
+                <div key={question.id} className="p-4 bg-white dark:bg-zinc-800 rounded-lg">
+                  <p className="font-medium mb-3">{question.question}</p>
+                  <div className="space-y-2">
+                    {question.options.map((option, optIndex) => (
+                      <label key={optIndex} className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name={`question-${question.id}`}
+                          value={option}
+                          checked={selectedAnswers[question.id] === option}
+                          onChange={() => handleAnswerSelect(question.id, option)}
+                          className="text-indigo-500 focus:ring-indigo-500"
+                        />
+                        <span>{option}</span>
+                      </label>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-            
-            {result.type === 'model' && (
-              <div className="aspect-video bg-gray-100 dark:bg-zinc-700 rounded-lg">
-                {/* 3D Model Viewer will be integrated here */}
-                <div className="w-full h-full flex items-center justify-center text-gray-500">
-                  {result.content}
                 </div>
+              ))}
+              <button
+                onClick={handleSubmitQuiz}
+                className="w-full px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all"
+              >
+                Submit Quiz
+              </button>
+            </div>
+          </div>
+        )}
+        {/* Quiz Results */}
+        {quizResults && (
+          <div className="mt-6 p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
+            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Quiz Results:</h3>
+            <div className="space-y-4">
+              {quizResults.results.map((result: any) => (
+                <div key={result.questionId} className="p-4 bg-white dark:bg-zinc-800 rounded-lg">
+                  <p className="font-medium mb-2">{result.question}</p>
+                  <p className={`mb-1 ${result.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                    Your answer: {result.selectedAnswer}
+                  </p>
+                  {!result.isCorrect && (
+                    <p className="text-gray-600">Correct answer: {result.correctAnswer}</p>
+                  )}
+                  <p className="text-sm text-gray-500 mt-2">{result.feedback}</p>
+                </div>
+              ))}
+              <div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+                <h4 className="font-medium mb-2">Summary</h4>
+                <p>Score: {quizResults.summary.score}/{quizResults.summary.total}</p>
+                <p>Percentage: {quizResults.summary.percentage}%</p>
+                <p className="mt-2">{quizResults.summary.feedback}</p>
               </div>
-            )}
+            </div>
+          </div>
+        )}
+        {/* Audio Player */}
+        {audioUrl && (
+          <div className="mt-6 p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
+            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Audio:</h3>
+            <audio controls className="w-full">
+              <source src={audioUrl} type="audio/wav" />
+              Your browser does not support the audio element.
+            </audio>
           </div>
         )}
       </div>

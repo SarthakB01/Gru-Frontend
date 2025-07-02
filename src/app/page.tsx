@@ -31,7 +31,7 @@ import {
 } from '@clerk/nextjs';
 
 import MessageSender from '../components/MessageSender';
-import TextSummarizer from '../components/TextSummarizer';
+import DocumentProcessor from '../components/DocumentProcessor';
 
 import { useAuth } from '@clerk/nextjs';
 
@@ -505,11 +505,6 @@ export default function Home() {
         )}
       </nav>
 
-      {/* Add TextSummarizer at the top */}
-      <div className="container mx-auto px-4 py-8">
-        <TextSummarizer />
-      </div>
-
       <div className="container mx-auto py-8">
         <h1 className="text-2xl font-bold mb-6 text-center">TypeScript Frontend-Backend Communication</h1>
         <MessageSender />
@@ -700,113 +695,7 @@ export default function Home() {
               </div>
             </div>
             <div className="md:w-1/2">
-              <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 h-full flex flex-col justify-center transform transition-all duration-300 hover:shadow-lg">
-                <h3 className="text-2xl font-semibold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-                  Transform Your Study Experience
-                </h3>
-                <ul className="space-y-5">
-                  <li className="flex items-center">
-                    <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-1.5 rounded-full mr-3 shadow-sm">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1.0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <span className="text-gray-700 dark:text-gray-200">
-                      Upload any PDF or DOCX files with your lecture notes or
-                      textbooks
-                    </span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-1.5 rounded-full mr-3 shadow-sm">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1.0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <span className="text-gray-700 dark:text-gray-200">
-                      Gru AI analyzes content to identify key concepts and
-                      knowledge gaps
-                    </span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-1.5 rounded-full mr-3 shadow-sm">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1.0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <span className="text-gray-700 dark:text-gray-200">
-                      Generate customized quizzes that adapt to your learning
-                      progress
-                    </span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-1.5 rounded-full mr-3 shadow-sm">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1.0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <span className="text-gray-700 dark:text-gray-200">
-                      Focus on areas where you need improvement using intelligent
-                      spaced repetition
-                    </span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-1.5 rounded-full mr-3 shadow-sm">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1.0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <span className="text-gray-700 dark:text-gray-200">
-                      Ask questions about your content and get contextually
-                      relevant answers
-                    </span>
-                  </li>
-                </ul>
-                <div className="mt-8 text-center">
-                  <a href="#demo" className="inline-block px-6 py-3 rounded-full shadow-md text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform transition-all duration-300 hover:scale-105">
-                    Start Using Gru Today
-                  </a>
-                </div>
-              </div>
+              <DocumentProcessor />
             </div>
           </div>
         </div>
