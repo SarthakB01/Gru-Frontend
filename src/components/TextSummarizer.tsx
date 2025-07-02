@@ -100,7 +100,12 @@ export default function TextSummarizer() {
               body: JSON.stringify({ text: textToProcess }),
             });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.error);
+            if (!response.ok) {
+              if (data.actualLength) {
+                throw new Error(`${data.error} (Your input: ${data.actualLength} characters)`);
+              }
+              throw new Error(data.error);
+            }
             setSummary(data.summary);
           } else {
             setSummary(textToProcess);
@@ -114,7 +119,12 @@ export default function TextSummarizer() {
             body: JSON.stringify({ text: textToProcess }),
           });
           const quizData = await quizResponse.json();
-          if (!quizResponse.ok) throw new Error(quizData.error);
+          if (!quizResponse.ok) {
+            if (quizData.actualLength) {
+              throw new Error(`${quizData.error} (Your input: ${quizData.actualLength} characters)`);
+            }
+            throw new Error(quizData.error);
+          }
           setQuiz(quizData.quiz.questions);
           break;
 
@@ -233,6 +243,7 @@ export default function TextSummarizer() {
             placeholder="Enter text to process..."
             className="w-full h-32 p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
+          <div className="text-xs text-gray-500 mt-1">Character count: {text.length}</div>
         </div>
 
         {/* File Upload */}
