@@ -719,12 +719,20 @@ export default function Home() {
           <div className="bg-gradient-to-br from-purple-300 to-gray-50 dark:from-zinc-800 dark:to-zinc-900 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200 dark:border-zinc-700 overflow-hidden">
             <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-zinc-700 mb-8">
               <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">Add your material</h3>
-              <div className="relative grid md:grid-cols-2 gap-8 items-start">
+              <div className="grid md:grid-cols-3 gap-4 mb-4 items-center">
+                <div className="text-center">
+                  <span className="text-lg font-semibold text-indigo-700 dark:text-indigo-300">Paste Text</span>
+                </div>
+                <div className="text-center">
+                  <span className="inline-block bg-white dark:bg-zinc-900 px-4 py-1 rounded-full shadow text-lg font-bold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-zinc-700">or</span>
+                </div>
+                <div className="text-center">
+                  <span className="text-lg font-semibold text-purple-700 dark:text-purple-300">Upload Document</span>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-8 items-start">
                 {/* Paste text */}
                 <div>
-                  <div className="mb-2 text-center">
-                    <span className="text-lg font-semibold text-indigo-700 dark:text-indigo-300">Paste Text</span>
-                  </div>
                   <div className={`transition-all duration-300 ${activeInput === 'upload' ? 'opacity-40 blur-sm' : 'opacity-100'}`}>
                     <textarea
                       value={inputText}
@@ -741,9 +749,6 @@ export default function Home() {
                 </div>
                 {/* Upload document */}
                 <div>
-                  <div className="mb-2 text-center">
-                    <span className="text-lg font-semibold text-purple-700 dark:text-purple-300">Upload Document</span>
-                  </div>
                   <div
                     className={`flex flex-col items-center justify-center gap-6 p-8 border-2 border-dashed border-purple-400 bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-xl transition-all duration-300 shadow-inner min-h-[220px] text-center relative cursor-pointer ${activeInput === 'text' ? 'opacity-40 blur-sm' : 'opacity-100'}`}
                     onDragOver={handleDragOver}
