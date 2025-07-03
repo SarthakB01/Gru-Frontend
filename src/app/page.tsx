@@ -715,13 +715,13 @@ export default function Home() {
           </div>
 
           {/* Interactive Demo Section */}
-          <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200 dark:border-zinc-700 overflow-hidden">
+          <div className="bg-gradient-to-br from-purple-300 to-gray-50 dark:from-zinc-800 dark:to-zinc-900 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200 dark:border-zinc-700 overflow-hidden">
             <Tabs.Root defaultValue="text" className="w-full">
-              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-t-xl">
+              <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-1 rounded-t-xl">
                 <Tabs.List className="flex bg-white/10 backdrop-blur-sm rounded-lg p-1.5 gap-1">
                   <Tabs.Trigger 
                     value="text" 
-                    className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/80 hover:text-white data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg"
+                    className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/80 hover:text-white data-[state=active]:bg-white/30 data-[state=active]:dark:bg-zinc-900/60 data-[state=active]:backdrop-blur-md data-[state=active]:text-indigo-400 data-[state=active]:shadow-xl"
                   >
                     <div className="flex items-center justify-center gap-2">
                       <FileText className="w-5 h-5" />
@@ -730,7 +730,7 @@ export default function Home() {
                   </Tabs.Trigger>
                   <Tabs.Trigger 
                     value="upload" 
-                    className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/80 hover:text-white data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg"
+                    className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/80 hover:text-white data-[state=active]:bg-white/30 data-[state=active]:dark:bg-zinc-900/60 data-[state=active]:backdrop-blur-md data-[state=active]:text-indigo-400 data-[state=active]:shadow-xl"
                   >
                     <div className="flex items-center justify-center gap-2">
                       <Upload className="w-5 h-5" />
@@ -821,12 +821,12 @@ export default function Home() {
                           {isSummarizing ? (
                             <>
                               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                              Analyzing with AI...
+                              Hmm, lemme see...
                             </>
                           ) : (
                             <>
                               <Brain className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                              Summarize with AI
+                              Summarize
                             </>
                           )}
                         </span>
