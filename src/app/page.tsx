@@ -644,7 +644,7 @@ export default function Home() {
       </section>
 
       {/* Merged Solution + Demo Section with Tabs */}
-      <section id="how-it-works" className="py-20 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950 dark:via-purple-950 dark:to-zinc-900 relative overflow-hidden">
+      <section id="how-it-works" className="py-20 bg-white dark:bg-zinc-900 relative overflow-hidden">
         {/* Background Elements */}
         {/* Background Elements for Main Section Emphasis */}
         <div className="absolute inset-0 bg-grid-slate-100 dark:bg-grid-slate-700/25 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]"></div>
@@ -794,45 +794,43 @@ export default function Home() {
                           {inputText.length} chars
                         </div>
                       </div>
-                      <div className="flex justify-center">
-                        <button
-                          onClick={async () => {
-                            setIsSummarizing(true);
-                            setSummarizeError('');
-                            setSummary('');
-                            try {
-                              const response = await fetch('http://localhost:5000/api/ai/summarize', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ text: inputText }),
-                              });
-                              const data = await response.json();
-                              if (!response.ok) throw new Error(data.error || 'Failed to summarize');
-                              setSummary(data.summary);
-                            } catch (err) {
-                              setSummarizeError(err instanceof Error ? err.message : 'Failed to summarize');
-                            } finally {
-                              setIsSummarizing(false);
-                            }
-                          }}
-                          disabled={!inputText.trim() || isSummarizing}
-                          className="group w-70 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl focus:ring-2 focus:ring-green-500 transform hover:scale-[1.02] disabled:hover:scale-100"
-                        >
-                          <span className="flex items-center justify-center gap-2">
-                            {isSummarizing ? (
-                              <>
-                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                Analyzing with AI...
-                              </>
-                            ) : (
-                              <>
-                                <Brain className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                Summarize with AI
-                              </>
-                            )}
-                          </span>
-                        </button>
-                      </div>
+                      <button
+                        onClick={async () => {
+                          setIsSummarizing(true);
+                          setSummarizeError('');
+                          setSummary('');
+                          try {
+                            const response = await fetch('http://localhost:5000/api/ai/summarize', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ text: inputText }),
+                            });
+                            const data = await response.json();
+                            if (!response.ok) throw new Error(data.error || 'Failed to summarize');
+                            setSummary(data.summary);
+                          } catch (err) {
+                            setSummarizeError(err instanceof Error ? err.message : 'Failed to summarize');
+                          } finally {
+                            setIsSummarizing(false);
+                          }
+                        }}
+                        disabled={!inputText.trim() || isSummarizing}
+                        className="group w-70 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl focus:ring-2 focus:ring-green-500 transform hover:scale-[1.02] disabled:hover:scale-100"
+                      >
+                        <span className="flex items-center justify-center gap-2">
+                          {isSummarizing ? (
+                            <>
+                              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                              Analyzing with AI...
+                            </>
+                          ) : (
+                            <>
+                              <Brain className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                              Summarize with AI
+                            </>
+                          )}
+                        </span>
+                      </button>
                       {summarizeError && (
                         <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl text-center text-lg font-medium border border-red-200 dark:border-red-800">
                           {summarizeError}
@@ -919,7 +917,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 relative overflow-hidden" >
+      <section className="py-20 bg-white dark:bg-zinc-900 relative overflow-hidden" >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-white/10 mix-blend-overlay blur-3xl"></div>
           <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-white/10 mix-blend-overlay blur-3xl"></div>
