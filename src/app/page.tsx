@@ -776,8 +776,8 @@ export default function Home() {
                 </SignedOut>
                 <SignedIn>
                   <div className="relative">
-                    <div className="absolute -top-4 left-8 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg z-10">
-                      ✨ Instant AI Summary
+                    <div className="absolute -top-4 left-8 bg-gradient-to-r from-indigo-800 to-purple-500 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg z-10">
+                      ✨ 
                     </div>
                     <div className="bg-gradient-to-br from-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800 p-10 rounded-xl shadow-inner border border-gray-100 dark:border-zinc-700">
                       <h3 className="text-2xl font-bold mb-8 text-gray-900 dark:text-white text-center">
@@ -794,52 +794,55 @@ export default function Home() {
                           {inputText.length} chars
                         </div>
                       </div>
-                      <button
-                        onClick={async () => {
-                          setIsSummarizing(true);
-                          setSummarizeError('');
-                          setSummary('');
-                          try {
-                            const response = await fetch('http://localhost:5000/api/ai/summarize', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ text: inputText }),
-                            });
-                            const data = await response.json();
-                            if (!response.ok) throw new Error(data.error || 'Failed to summarize');
-                            setSummary(data.summary);
-                          } catch (err) {
-                            setSummarizeError(err instanceof Error ? err.message : 'Failed to summarize');
-                          } finally {
-                            setIsSummarizing(false);
-                          }
-                        }}
-                        disabled={!inputText.trim() || isSummarizing}
-                        className="group w-70 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl focus:ring-2 focus:ring-green-500 transform hover:scale-[1.02] disabled:hover:scale-100"
-                      >
-                        <span className="flex items-center justify-center gap-2">
-                          {isSummarizing ? (
-                            <>
-                              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                              Hmm, lemme see...
-                            </>
-                          ) : (
-                            <>
-                              <Brain className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                              Summarize
-                            </>
-                          )}
-                        </span>
-                      </button>
+                      <div className="flex justify-center">
+                        <button
+                          onClick={async () => {
+                            setIsSummarizing(true);
+                            setSummarizeError('');
+                            setSummary('');
+                            try {
+                              const response = await fetch('http://localhost:5000/api/ai/summarize', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ text: inputText }),
+                              });
+                              const data = await response.json();
+                              if (!response.ok) throw new Error(data.error || 'Failed to summarize');
+                              setSummary(data.summary);
+                            } catch (err) {
+                              setSummarizeError(err instanceof Error ? err.message : 'Failed to summarize');
+                            } finally {
+                              setIsSummarizing(false);
+                            }
+                          }}
+                          disabled={!inputText.trim() || isSummarizing}
+                          className="group w-70 px-6 py-4 bg-gradient-to-r from-indigo-700 to-purple-600 text-white rounded-xl text-lg font-semibold hover:from-indigo-500 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl focus:ring-2 focus:ring-green-500 transform hover:scale-[1.02] disabled:hover:scale-100"
+                        >
+                          <span className="flex items-center justify-center gap-2">
+                            {isSummarizing ? (
+                              <>
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                Hmm, lemme see...
+                              </>
+                            ) : (
+                              <>
+                                
+                                Hit it!
+                                <Brain className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                              </>
+                            )}
+                          </span>
+                        </button>
+                      </div>
                       {summarizeError && (
                         <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl text-center text-lg font-medium border border-red-200 dark:border-red-800">
                           {summarizeError}
                         </div>
                       )}
                       {summary && (
-                        <div className="mt-8 p-8 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl shadow-lg border border-green-100 dark:border-green-800">
+                        <div className="mt-8 p-8 bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-xl shadow-lg border border-purple-200 dark:border-purple-800">
                           <div className="flex items-center gap-3 mb-4">
-                            <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
                               <Sparkles className="w-4 h-4 text-white" />
                             </div>
                             <h3 className="font-semibold text-gray-900 dark:text-white text-xl">AI Summary</h3>
