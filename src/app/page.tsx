@@ -724,7 +724,7 @@ export default function Home() {
                   <span className="text-lg font-semibold text-indigo-700 dark:text-indigo-300">Paste Text</span>
                 </div>
                 <div className="text-center">
-                  <span className="inline-block bg-white dark:bg-zinc-900 px-4 py-1 rounded-full shadow text-lg font-bold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-zinc-700">or</span>
+                  <span className="text-lg font-bold text-gray-500 dark:text-gray-400">or</span>
                 </div>
                 <div className="text-center">
                   <span className="text-lg font-semibold text-purple-700 dark:text-purple-300">Upload Document</span>
