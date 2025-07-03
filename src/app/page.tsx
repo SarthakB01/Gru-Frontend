@@ -719,71 +719,79 @@ export default function Home() {
           <div className="bg-gradient-to-br from-purple-300 to-gray-50 dark:from-zinc-800 dark:to-zinc-900 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200 dark:border-zinc-700 overflow-hidden">
             <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-zinc-700 mb-8">
               <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">Add your material</h3>
-              <div className="grid md:grid-cols-2 gap-8">
+              <div className="relative grid md:grid-cols-2 gap-8 items-start">
                 {/* Paste text */}
-                <div className={`transition-all duration-300 ${activeInput === 'upload' ? 'opacity-40 blur-sm' : 'opacity-100'}`}>
-                  <textarea
-                    value={inputText}
-                    onChange={e => {
-                      setInputText(e.target.value);
-                      setActiveInput('text');
-                    }}
-                    onFocus={() => setActiveInput('text')}
-                    placeholder="Paste your notes, articles, or study materials here..."
-                    className="w-full h-48 p-6 border-2 border-gray-200 dark:border-zinc-700 rounded-xl dark:bg-zinc-800 focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-4 text-lg resize transition-all duration-300 placeholder:text-gray-400"
-                  />
-                  <div className="text-xs text-gray-400 text-right">{inputText.length} chars</div>
+                <div>
+                  <div className="mb-2 text-center">
+                    <span className="text-lg font-semibold text-indigo-700 dark:text-indigo-300">Paste Text</span>
+                  </div>
+                  <div className={`transition-all duration-300 ${activeInput === 'upload' ? 'opacity-40 blur-sm' : 'opacity-100'}`}>
+                    <textarea
+                      value={inputText}
+                      onChange={e => {
+                        setInputText(e.target.value);
+                        setActiveInput('text');
+                      }}
+                      onFocus={() => setActiveInput('text')}
+                      placeholder="Paste your notes, articles, or study materials here..."
+                      className="w-full h-48 p-6 border-2 border-gray-200 dark:border-zinc-700 rounded-xl dark:bg-zinc-800 focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-4 text-lg resize transition-all duration-300 placeholder:text-gray-400"
+                    />
+                    <div className="text-xs text-gray-400 text-right">{inputText.length} chars</div>
+                  </div>
                 </div>
-
                 {/* Upload document */}
-                <div
-                  className={`flex flex-col items-center justify-center gap-6 p-8 border-2 border-dashed border-purple-400 bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-xl transition-all duration-300 shadow-inner min-h-[220px] text-center relative cursor-pointer ${activeInput === 'text' ? 'opacity-40 blur-sm' : 'opacity-100'
-                    }`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => {
-                    setActiveInput('upload');
-                    fileInputRef.current?.click();
-                  }}
-                >
-                  <input
-                    type="file"
-                    accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
-                    ref={fileInputRef}
-                    className="hidden"
-                    onChange={e => {
-                      if (e.target.files && e.target.files[0]) handleFileUpload(e.target.files[0]);
+                <div>
+                  <div className="mb-2 text-center">
+                    <span className="text-lg font-semibold text-purple-700 dark:text-purple-300">Upload Document</span>
+                  </div>
+                  <div
+                    className={`flex flex-col items-center justify-center gap-6 p-8 border-2 border-dashed border-purple-400 bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-xl transition-all duration-300 shadow-inner min-h-[220px] text-center relative cursor-pointer ${activeInput === 'text' ? 'opacity-40 blur-sm' : 'opacity-100'}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() => {
+                      setActiveInput('upload');
+                      fileInputRef.current?.click();
                     }}
-                  />
-                  <Upload className="w-12 h-12 text-purple-500 mb-2" />
-                  <div className="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-1">Drag & drop or click to upload</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-300 mb-2">PDF, Word, or Text files only</div>
+                  >
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                      ref={fileInputRef}
+                      className="hidden"
+                      onChange={e => {
+                        if (e.target.files && e.target.files[0]) handleFileUpload(e.target.files[0]);
+                      }}
+                    />
+                    <Upload className="w-12 h-12 text-purple-500 mb-2" />
+                    <div className="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-1">Drag & drop or click to upload</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-300 mb-2">PDF, Word, or Text files only</div>
 
-                  {isDragging && (
-                    <div className="absolute inset-0 bg-purple-200/40 dark:bg-purple-900/40 rounded-xl flex items-center justify-center text-2xl font-bold text-purple-700 dark:text-purple-200 z-10 pointer-events-none animate-pulse">
-                      Drop to upload
-                    </div>
-                  )}
+                    {isDragging && (
+                      <div className="absolute inset-0 bg-purple-200/40 dark:bg-purple-900/40 rounded-xl flex items-center justify-center text-2xl font-bold text-purple-700 dark:text-purple-200 z-10 pointer-events-none animate-pulse">
+                        Drop to upload
+                      </div>
+                    )}
 
-                  {isLoading && (
-                    <div className="flex items-center gap-2 mt-4 text-purple-700 dark:text-purple-200">
-                      <div className="w-5 h-5 border-2 border-purple-300 border-t-purple-700 dark:border-purple-700 dark:border-t-purple-300 rounded-full animate-spin"></div>
-                      Uploading...
-                    </div>
-                  )}
+                    {isLoading && (
+                      <div className="flex items-center gap-2 mt-4 text-purple-700 dark:text-purple-200">
+                        <div className="w-5 h-5 border-2 border-purple-300 border-t-purple-700 dark:border-purple-700 dark:border-t-purple-300 rounded-full animate-spin"></div>
+                        Uploading...
+                      </div>
+                    )}
 
-                  {uploadStatus && (
-                    <div className="mt-4 p-3 bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/40 dark:to-indigo-900/40 rounded-lg text-purple-800 dark:text-purple-200 text-sm font-medium border border-purple-200 dark:border-purple-700">
-                      {uploadStatus}
-                    </div>
-                  )}
+                    {uploadStatus && (
+                      <div className="mt-4 p-3 bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/40 dark:to-indigo-900/40 rounded-lg text-purple-800 dark:text-purple-200 text-sm font-medium border border-purple-200 dark:border-purple-700">
+                        {uploadStatus}
+                      </div>
+                    )}
 
-                  {uploadError && (
-                    <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg text-red-700 dark:text-red-300 text-sm font-medium border border-red-200 dark:border-red-700">
-                      {uploadError}
-                    </div>
-                  )}
+                    {uploadError && (
+                      <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg text-red-700 dark:text-red-300 text-sm font-medium border border-red-200 dark:border-red-700">
+                        {uploadError}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -861,7 +869,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
             <a
               href="#"
-              className="px-8 py-3.5 rounded-full text-md font-semibold bg-white text-indigo-700 hover:bg-indigo-50 transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform hover:scale-105"
+              className="px-8 py-3.5 rounded-full text-md font-semibold bg-white text-indigo-700 hover:bg-indigo-50 transition-al duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform hover:scale-105"
             >
               Sign Up Free
             </a>
@@ -1076,7 +1084,7 @@ export default function Home() {
                 >
                   <path
                     fillRule="evenodd"
-                    d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.772 1.153 4.902 4.902 0 01-1.153 1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.0112.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882.344 1.857.047 1.054.058 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.047-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
+                    d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.772 1.153 4.902 4.902 0 01-1.153 1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.0112.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882.344 1.857.047 1.054.058 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.047-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
                     clipRule="evenodd"
                   />
                 </svg>
