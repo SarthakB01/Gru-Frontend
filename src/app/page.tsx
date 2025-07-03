@@ -716,31 +716,40 @@ export default function Home() {
 
           {/* Interactive Demo Section */}
           <div className="bg-gradient-to-br from-purple-300 to-gray-50 dark:from-zinc-800 dark:to-zinc-900 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200 dark:border-zinc-700 overflow-hidden">
-            <Tabs.Root defaultValue="text" className="w-full">
+            <Tabs.Root defaultValue="summarize" className="w-full">
               <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-1 rounded-t-xl">
                 <Tabs.List className="flex bg-white/10 backdrop-blur-sm rounded-lg p-1.5 gap-1">
                   <Tabs.Trigger 
-                    value="text" 
-                    className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/80 hover:text-white data-[state=active]:bg-white/30 data-[state=active]:dark:bg-zinc-900/60 data-[state=active]:backdrop-blur-md data-[state=active]:text-indigo-400 data-[state=active]:shadow-xl"
+                    value="summarize" 
+                    className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/80 hover:text-white data-[state=active]:bg-white/70 dark:data-[state=active]:bg-zinc-900/80 backdrop-blur-md data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg"
                   >
                     <div className="flex items-center justify-center gap-2">
                       <FileText className="w-5 h-5" />
-                      Summarize Text
+                      Summarize
                     </div>
                   </Tabs.Trigger>
                   <Tabs.Trigger 
-                    value="upload" 
-                    className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/80 hover:text-white data-[state=active]:bg-white/30 data-[state=active]:dark:bg-zinc-900/60 data-[state=active]:backdrop-blur-md data-[state=active]:text-indigo-400 data-[state=active]:shadow-xl"
+                    value="chat" 
+                    className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/80 hover:text-white data-[state=active]:bg-white/70 dark:data-[state=active]:bg-zinc-900/80 backdrop-blur-md data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg"
                   >
                     <div className="flex items-center justify-center gap-2">
-                      <Upload className="w-5 h-5" />
-                      Upload Document
+                      <MessageCircle className="w-5 h-5" />
+                      Chat with Gru about your document
+                    </div>
+                  </Tabs.Trigger>
+                  <Tabs.Trigger 
+                    value="quiz" 
+                    className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/80 hover:text-white data-[state=active]:bg-white/70 dark:data-[state=active]:bg-zinc-900/80 backdrop-blur-md data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <Sparkles className="w-5 h-5" />
+                      Make Interactive Quizzes
                     </div>
                   </Tabs.Trigger>
                 </Tabs.List>
               </div>
 
-              <Tabs.Content value="text" className="outline-none p-8">
+              <Tabs.Content value="summarize" className="outline-none p-8">
                 <SignedOut>
                   <div className="text-center py-16">
                     <div className="mb-8">
@@ -857,7 +866,7 @@ export default function Home() {
                 </SignedIn>
               </Tabs.Content>
 
-              <Tabs.Content value="upload" className="outline-none p-8">
+              <Tabs.Content value="chat" className="outline-none p-8">
                 <SignedOut>
                   <div className="text-center py-16">
                     <div className="mb-8">
@@ -892,27 +901,127 @@ export default function Home() {
                   </div>
                 </SignedOut>
                 <SignedIn>
-                  <div className="grid lg:grid-cols-2 gap-8">
-                    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-zinc-700">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                          <Upload className="w-5 h-5 text-white" />
+                  <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-zinc-700">
+                    <div className="flex flex-col items-center justify-center gap-6 p-8 border-2 border-dashed border-purple-400 bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-xl transition-all duration-300 shadow-inner min-h-[220px] text-center relative"
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                        ref={fileInputRef}
+                        className="hidden"
+                        onChange={e => {
+                          if (e.target.files && e.target.files[0]) handleFileUpload(e.target.files[0]);
+                        }}
+                      />
+                      <Upload className="w-12 h-12 text-purple-500 mb-2" />
+                      <div className="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-1">Drag & drop or click to upload</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-300 mb-2">PDF, Word, or Text files only</div>
+                      {isDragging && (
+                        <div className="absolute inset-0 bg-purple-200/40 dark:bg-purple-900/40 rounded-xl flex items-center justify-center text-2xl font-bold text-purple-700 dark:text-purple-200 z-10 pointer-events-none">
+                          Drop to upload
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Upload Your Document</h3>
-                      </div>
-                      {/* Existing upload logic preserved */}
-                    </div>
-                    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-zinc-700">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-                          <Brain className="w-5 h-5 text-white" />
+                      )}
+                      {isLoading && (
+                        <div className="flex items-center gap-2 mt-4 text-purple-700 dark:text-purple-200">
+                          <div className="w-5 h-5 border-2 border-purple-300 border-t-purple-700 dark:border-purple-700 dark:border-t-purple-300 rounded-full animate-spin"></div>
+                          Uploading...
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Interactive Learning</h3>
-                      </div>
-                      {/* Existing quiz/chat tabs logic preserved */}
+                      )}
+                      {uploadStatus && (
+                        <div className="mt-4 p-3 bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/40 dark:to-indigo-900/40 rounded-lg text-purple-800 dark:text-purple-200 text-sm font-medium border border-purple-200 dark:border-purple-700">
+                          {uploadStatus}
+                        </div>
+                      )}
+                      {uploadError && (
+                        <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg text-red-700 dark:text-red-300 text-sm font-medium border border-red-200 dark:border-red-700">
+                          {uploadError}
+                        </div>
+                      )}
                     </div>
+                    {/* Summarize button and summary result after upload */}
+                    {fileUploaded && !isLoading && (
+                      <div className="flex flex-col items-center mt-8">
+                        <button
+                          onClick={async () => {
+                            setIsSummarizing(true);
+                            setSummarizeError('');
+                            setSummary('');
+                            try {
+                              // Simulate API call for now
+                              const response = await fetch('http://localhost:5000/api/ai/summarize', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ text: uploadStatus }), // Replace with actual file text
+                              });
+                              const data = await response.json();
+                              if (!response.ok) throw new Error(data.error || 'Failed to summarize');
+                              setSummary(data.summary);
+                            } catch (err) {
+                              setSummarizeError(err instanceof Error ? err.message : 'Failed to summarize');
+                            } finally {
+                              setIsSummarizing(false);
+                            }
+                          }}
+                          disabled={isSummarizing}
+                          className="group w-70 px-6 py-4 bg-gradient-to-r from-indigo-700 to-purple-600 text-white rounded-xl text-lg font-semibold hover:from-indigo-500 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl focus:ring-2 focus:ring-green-500 transform hover:scale-[1.02] disabled:hover:scale-100"
+                        >
+                          <span className="flex items-center justify-center gap-2">
+                            {isSummarizing ? (
+                              <>
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                Hmm, lemme see...
+                              </>
+                            ) : (
+                              <>
+                                Hit it!
+                                <Brain className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                              </>
+                            )}
+                          </span>
+                        </button>
+                        {summarizeError && (
+                          <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl text-center text-lg font-medium border border-red-200 dark:border-red-800">
+                            {summarizeError}
+                          </div>
+                        )}
+                        {summary && (
+                          <div className="mt-8 p-8 bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-xl shadow-lg border border-purple-200 dark:border-purple-800">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
+                                <Sparkles className="w-4 h-4 text-white" />
+                              </div>
+                              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">AI Summary</h3>
+                            </div>
+                            <div className="prose dark:prose-invert max-w-none text-lg leading-relaxed">
+                              <p className="text-gray-700 dark:text-gray-300">{summary}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </SignedIn>
+              </Tabs.Content>
+
+              <Tabs.Content value="quiz" className="outline-none p-8">
+                <div className="text-center py-16">
+                  <div className="mb-8">
+                    <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                      <Sparkles className="w-10 h-10 text-white" />
+                    </div>
+                    <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">
+                      Make Interactive Quizzes
+                    </h3>
+                    <p className="text-lg text-gray-600 dark:text-gray-300 max-w-md mx-auto">
+                      This feature is coming soon! You'll be able to generate quizzes from your documents and notes.
+                    </p>
+                  </div>
+                </div>
               </Tabs.Content>
             </Tabs.Root>
           </div>
@@ -1152,7 +1261,7 @@ export default function Home() {
                 >
                   <path
                     fillRule="evenodd"
-                    d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.772 1.153 4.902 4.902 0 01-1.153 1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.0112.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.054.058 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
+                    d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.772 1.153 4.902 4.902 0 01-1.153 1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.0112.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.048 1.054.058 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.047-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
                     clipRule="evenodd"
                   />
                 </svg>
