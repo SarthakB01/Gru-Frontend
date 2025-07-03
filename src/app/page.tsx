@@ -788,7 +788,7 @@ export default function Home() {
                           value={inputText}
                           onChange={e => setInputText(e.target.value)}
                           placeholder="Paste your notes, articles, or study materials here and watch Gru work its magic..."
-                          className="w-full h-48 p-6 border-2 border-gray-200 dark:border-zinc-700 rounded-xl dark:bg-zinc-800 focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-6 text-lg resize-none transition-all duration-300 placeholder:text-gray-400"
+                          className="w-full h-48 p-6 border-2 border-gray-200 dark:border-zinc-700 rounded-xl dark:bg-zinc-800 focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-6 text-lg resize transition-all duration-300 placeholder:text-gray-400"
                         />
                         <div className="absolute top-4 right-4 text-xs text-gray-400 bg-white dark:bg-zinc-800 px-2 py-1 rounded-md">
                           {inputText.length} chars
