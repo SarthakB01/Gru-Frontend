@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import * as Tabs from '@radix-ui/react-tabs';
 import {
@@ -836,12 +836,64 @@ export default function Home() {
                 </div>
                 <Tabs.Content value="summarize" className="outline-none p-8">
                   {/* Summarize logic here */}
+                  {isSummarizing ? (
+                    <div className="text-center text-lg text-purple-700 dark:text-purple-200">Summarizing...</div>
+                  ) : summary ? (
+                    <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-6">
+                      <h3 className="text-xl font-bold mb-4 text-indigo-700 dark:text-indigo-300">Summary</h3>
+                      <p className="text-gray-800 dark:text-gray-100 whitespace-pre-line">{summary}</p>
+                    </div>
+                  ) : (
+                    <button
+                      className="mt-4 px-6 py-3 rounded-full bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-all"
+                      onClick={async () => {
+                        setIsSummarizing(true);
+                        setSummarizeError('');
+                        setSummary('');
+                        try {
+                          let textToSummarize = inputText;
+                          if (fileUploaded) {
+                            // Fetch summary from backend for uploaded file
+                            const res = await fetch('http://localhost:5000/api/ai/summarize-document', {
+                              method: 'POST',
+                              body: new FormData(fileInputRef.current?.form || undefined),
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || 'Failed to summarize document');
+                            setSummary(data.summary);
+                          } else {
+                            // Summarize pasted text
+                            const res = await fetch('http://localhost:5000/api/ai/summarize', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ text: inputText }),
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || 'Failed to summarize text');
+                            setSummary(data.summary);
+                          }
+                        } catch (err: any) {
+                          setSummarizeError(err.message || 'Failed to summarize');
+                        } finally {
+                          setIsSummarizing(false);
+                        }
+                      }}
+                      disabled={isSummarizing}
+                    >
+                      Summarize
+                    </button>
+                  )}
+                  {summarizeError && (
+                    <div className="mt-4 text-red-600 dark:text-red-400">{summarizeError}</div>
+                  )}
                 </Tabs.Content>
                 <Tabs.Content value="chat" className="outline-none p-8">
                   {/* Chat logic here */}
+                  <ChatWithGru inputText={inputText} />
                 </Tabs.Content>
                 <Tabs.Content value="quiz" className="outline-none p-8">
                   {/* Quiz logic here */}
+                  <QuizGenerator inputText={inputText} />
                 </Tabs.Content>
               </Tabs.Root>
             )}
@@ -1126,5 +1178,202 @@ export default function Home() {
         </div>
       </footer >
     </div >
+  );
+}
+
+// --- ChatWithGru Component ---
+import { useState } from 'react';
+
+type ChatMessage = { role: 'user' | 'gru'; content: string };
+function ChatWithGru({ inputText }: { inputText: string }) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [userInput, setUserInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const sendMessage = async () => {
+    if (!userInput.trim()) return;
+    setIsLoading(true);
+    setError('');
+    setMessages(msgs => [...msgs, { role: 'user', content: userInput }]);
+    try {
+      // Use backend endpoint if available, otherwise fallback to Groq API
+      const res = await fetch('http://localhost:5000/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: userInput,
+          context: inputText,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to get answer');
+      setMessages(msgs => [...msgs, { role: 'gru', content: data.answer }]);
+      setUserInput('');
+    } catch (err: any) {
+      setError(err.message || 'Failed to get answer');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-4 h-64 overflow-y-auto mb-2">
+        {messages.length === 0 && <div className="text-gray-400">Start chatting with Gru about your document!</div>}
+        {messages.map((msg, idx) => (
+          <div key={idx} className={`mb-2 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}> 
+            <span className={msg.role === 'user' ? 'text-indigo-600 font-semibold' : 'text-purple-700 dark:text-purple-300 font-semibold'}>
+              {msg.role === 'user' ? 'You' : 'Gru'}:
+            </span> {msg.content}
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input
+          className="flex-1 border rounded px-3 py-2 dark:bg-zinc-900"
+          value={userInput}
+          onChange={e => setUserInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
+          placeholder="Ask Gru a question about your material..."
+          disabled={isLoading}
+        />
+        <button
+          className="px-4 py-2 bg-purple-600 text-white rounded disabled:opacity-50"
+          onClick={sendMessage}
+          disabled={isLoading || !userInput.trim()}
+        >
+          Send
+        </button>
+      </div>
+      {error && <div className="text-red-600 dark:text-red-400">{error}</div>}
+    </div>
+  );
+}
+
+// --- QuizGenerator Component ---
+type QuizQuestion = { id: number; question: string; options: string[]; correct: string };
+type QuizResult = { summary: { score: number; total: number; percentage: number; feedback: string }; results: { isCorrect: boolean; question: string; selectedAnswer: string; correctAnswer: string }[] };
+
+function QuizGenerator({ inputText }: { inputText: string }) {
+  const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
+  const [results, setResults] = useState<QuizResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const generateQuiz = async () => {
+    setIsLoading(true);
+    setError('');
+    setQuiz([]);
+    setResults(null);
+    try {
+      const res = await fetch('http://localhost:5000/api/ai/generate-quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: inputText }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate quiz');
+      setQuiz(data.quiz.questions);
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate quiz');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const submitAnswers = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const answers = quiz.map((q: QuizQuestion) => ({
+        questionId: q.id,
+        question: q.question,
+        selectedAnswer: selectedAnswers[q.id] || '',
+        correctAnswer: q.correct,
+      }));
+      const res = await fetch('http://localhost:5000/api/ai/verify-answers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to verify answers');
+      setResults(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to verify answers');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {quiz.length === 0 && !isLoading && (
+        <button
+          className="px-6 py-3 rounded-full bg-purple-600 text-white font-semibold hover:bg-purple-700 transition-all"
+          onClick={generateQuiz}
+          disabled={isLoading}
+        >
+          Generate Quiz
+        </button>
+      )}
+      {isLoading && <div className="text-center text-lg text-purple-700 dark:text-purple-200">Loading...</div>}
+      {quiz.length > 0 && !results && (
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            submitAnswers();
+          }}
+          className="space-y-6"
+        >
+          {quiz.map((q: QuizQuestion) => (
+            <div key={q.id} className="bg-white dark:bg-zinc-800 rounded-xl shadow p-4">
+              <div className="font-semibold mb-2">{q.question}</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {q.options.map((opt: string, idx: number) => (
+                  <label key={idx} className={`flex items-center gap-2 p-2 rounded cursor-pointer ${selectedAnswers[q.id] === opt ? 'bg-purple-100 dark:bg-purple-900/40' : ''}`}>
+                    <input
+                      type="radio"
+                      name={`q${q.id}`}
+                      value={opt}
+                      checked={selectedAnswers[q.id] === opt}
+                      onChange={() => setSelectedAnswers(a => ({ ...a, [q.id]: opt }))}
+                      className="accent-purple-600"
+                    />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+          <button
+            type="submit"
+            className="px-6 py-3 rounded-full bg-green-600 text-white font-semibold hover:bg-green-700 transition-all"
+            disabled={isLoading}
+          >
+            Submit Answers
+          </button>
+        </form>
+      )}
+      {results && (
+        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-6">
+          <h3 className="text-xl font-bold mb-4 text-green-700 dark:text-green-300">Quiz Results</h3>
+          <div className="mb-2">Score: {results.summary.score} / {results.summary.total} ({Math.round(results.summary.percentage)}%)</div>
+          <div className="mb-2">{results.summary.feedback}</div>
+          <ul className="space-y-2">
+            {results.results.map((r: { isCorrect: boolean; question: string; selectedAnswer: string; correctAnswer: string }, idx: number) => (
+              <li key={idx} className={r.isCorrect ? 'text-green-700 dark:text-green-300' : 'text-red-600 dark:text-red-400'}>
+                Q: {r.question}
+                <br />Your answer: {r.selectedAnswer} {r.isCorrect ? '✅' : '❌'}
+                {!r.isCorrect && <span> (Correct: {r.correctAnswer})</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {error && <div className="text-red-600 dark:text-red-400">{error}</div>}
+    </div>
   );
 }
