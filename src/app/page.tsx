@@ -1555,19 +1555,95 @@ function QuizGenerator({ inputText, uploadedFile }: { inputText: string; uploade
         </form>
       )}
       {results && (
-        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-6">
-          <h3 className="text-xl font-bold mb-4 text-green-700 dark:text-green-300">Quiz Results</h3>
-          <div className="mb-2">Score: {results.summary.score} / {results.summary.total} ({Math.round(results.summary.percentage)}%)</div>
-          <div className="mb-2">{results.summary.feedback}</div>
-          <ul className="space-y-2">
-            {results.results.map((r: { isCorrect: boolean; question: string; selectedAnswer: string; correctAnswer: string }, idx: number) => (
-              <li key={idx} className={r.isCorrect ? 'text-green-700 dark:text-green-300' : 'text-red-600 dark:text-red-400'}>
-                Q: {r.question}
-                <br />Your answer: {r.selectedAnswer} {r.isCorrect ? '✅' : '❌'}
-                {!r.isCorrect && <span> (Correct: {r.correctAnswer})</span>}
-              </li>
-            ))}
-          </ul>
+        <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 rounded-xl shadow-lg border border-gray-200 dark:border-zinc-700 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              Quiz Results
+            </h3>
+          </div>
+          
+          {/* Score Summary */}
+          <div className="p-6">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg p-4 mb-6 border border-green-200 dark:border-green-800">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-700 dark:text-green-300 mb-2">
+                  {results.summary.score} / {results.summary.total}
+                </div>
+                <div className="text-lg text-green-600 dark:text-green-400 mb-2">
+                  {Math.round(results.summary.percentage)}% Score
+                </div>
+                <div className="text-sm text-green-700 dark:text-green-300 font-medium">
+                  {results.summary.feedback}
+                </div>
+              </div>
+            </div>
+            
+            {/* Individual Question Results */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Question Breakdown</h4>
+              {results.results.map((r: { isCorrect: boolean; question: string; selectedAnswer: string; correctAnswer: string }, idx: number) => (
+                <div key={idx} className={`p-4 rounded-lg border ${
+                  r.isCorrect 
+                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
+                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                }`}>
+                  <div className="flex items-start gap-3">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+                      r.isCorrect ? 'bg-green-500' : 'bg-red-500'
+                    }`}>
+                      {r.isCorrect ? '✓' : '✗'}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900 dark:text-white mb-2">
+                        Question {idx + 1}: {r.question}
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <div className={`flex items-center gap-2 ${
+                          r.isCorrect ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
+                        }`}>
+                          <span className="font-medium">Your answer:</span>
+                          <span>{r.selectedAnswer}</span>
+                          {r.isCorrect ? (
+                            <span className="text-green-600">✅ Correct!</span>
+                          ) : (
+                            <span className="text-red-600">❌ Incorrect</span>
+                          )}
+                        </div>
+                        {!r.isCorrect && (
+                          <div className="text-green-700 dark:text-green-300 flex items-center gap-2">
+                            <span className="font-medium">Correct answer:</span>
+                            <span>{r.correctAnswer}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-zinc-700">
+              <button
+                onClick={() => {
+                  setQuiz([]);
+                  setResults(null);
+                  setSelectedAnswers({});
+                }}
+                className="flex-1 px-4 py-2 bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors font-medium"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={generateQuiz}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-medium"
+              >
+                New Quiz
+              </button>
+            </div>
+          </div>
         </div>
       )}
       {error && <div className="text-red-600 dark:text-red-400">{error}</div>}
