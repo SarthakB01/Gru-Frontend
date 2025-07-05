@@ -397,10 +397,14 @@ export default function Home() {
     href,
     label,
     isActive,
+    tabName,
+    scrollOffset = 0,
   }: {
     href: string;
     label: string;
     isActive: boolean;
+    tabName: string;
+    scrollOffset?: number;
   }) => (
     <a
       href={href}
@@ -412,11 +416,15 @@ export default function Home() {
         e.preventDefault();
         const element = document.querySelector(href);
         if (element) {
-          element.scrollIntoView({
-            behavior: 'smooth',
+          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = elementPosition + scrollOffset;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
           });
         }
-        setActiveTab(href.replace('#', ''));
+        setActiveTab(tabName);
       }}
     >
       {label}
@@ -469,10 +477,10 @@ export default function Home() {
 
               {/* Nav buttons */}
               <div className="bg-gray-100 dark:bg-zinc-800 rounded-full p-1.5 flex items-center">
-                <NavButton href="#problem" label="Problem" isActive={activeTab === 'problem'} />
-                <NavButton href="#solution" label="Solution" isActive={activeTab === 'solution'} />
-                <NavButton href="#demo" label="Demo" isActive={activeTab === 'demo'} />
-                <NavButton href="#features" label="Features" isActive={activeTab === 'features'} />
+                <NavButton href="#problem" label="Problem" isActive={activeTab === 'problem'} tabName="problem" />
+                <NavButton href="#how-it-works" label="Solution" isActive={activeTab === 'solution'} tabName="solution" />
+                <NavButton href="#how-it-works" label="Demo" isActive={activeTab === 'demo'} tabName="demo" scrollOffset={400} />
+                <NavButton href="#features" label="Features" isActive={activeTab === 'features'} tabName="features" />
               </div>
 
               {/* Auth buttons */}
@@ -518,13 +526,13 @@ export default function Home() {
                 Problem
               </a>
               <a
-                href="#solution"
+                href="#how-it-works"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 hover:bg-gray-50 dark:hover:text-white dark:hover:bg-zinc-800"
               >
                 Solution
               </a>
               <a
-                href="#demo"
+                href="#how-it-works"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 hover:bg-gray-50 dark:hover:text-white dark:hover:bg-zinc-800"
               >
                 Demo
@@ -587,9 +595,9 @@ export default function Home() {
             <button
               onClick={() => {
                 if (isSignedIn) {
-                  const demoSection = document.getElementById('demo');
-                  if (demoSection) {
-                    demoSection.scrollIntoView({ behavior: 'smooth' });
+                  const howItWorksSection = document.getElementById('how-it-works');
+                  if (howItWorksSection) {
+                    howItWorksSection.scrollIntoView({ behavior: 'smooth' });
                   }
                 } else {
                   clerk.openSignIn();
