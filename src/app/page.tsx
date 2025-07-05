@@ -787,13 +787,27 @@ export default function Home() {
                 {/* Paste text */}
                 <div>
                   <div className={`transition-all duration-300 ${activeInput === 'upload' ? 'opacity-40 blur-sm' : 'opacity-100'}`}>
-                    <textarea
-                      value={inputText}
-                      onChange={handleTextChange}
-                      onFocus={() => setActiveInput('text')}
-                      placeholder="Paste your notes, articles, or study materials here..."
-                      className="w-full h-48 p-6 border-2 border-gray-200 dark:border-zinc-700 rounded-xl dark:bg-zinc-800 focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-4 text-lg resize transition-all duration-300 placeholder:text-gray-400"
-                    />
+                    <div className="relative">
+                      <textarea
+                        value={inputText}
+                        onChange={handleTextChange}
+                        onFocus={() => setActiveInput('text')}
+                        placeholder="Paste your notes, articles, or study materials here..."
+                        className="w-full h-48 p-6 border-2 border-gray-200 dark:border-zinc-700 rounded-xl dark:bg-zinc-800 focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-4 text-lg resize transition-all duration-300 placeholder:text-gray-400"
+                      />
+                      {inputText && (
+                        <button
+                          onClick={() => {
+                            setInputText('');
+                            resetAllStates();
+                          }}
+                          className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all duration-200 shadow-lg hover:shadow-xl"
+                          title="Clear text"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                     <div className="text-xs text-gray-400 text-right">{inputText.length} chars</div>
                   </div>
                 </div>
@@ -844,6 +858,31 @@ export default function Home() {
                     {uploadError && (
                       <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg text-red-700 dark:text-red-300 text-sm font-medium border border-red-200 dark:border-red-700">
                         {uploadError}
+                      </div>
+                    )}
+
+                    {uploadedFile && (
+                      <div className="mt-4 flex items-center justify-between p-3 bg-green-100 dark:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-700">
+                        <div className="flex items-center gap-2 text-green-700 dark:text-green-300 text-sm font-medium">
+                          <FileUp className="w-4 h-4" />
+                          {uploadedFile.name}
+                        </div>
+                        <button
+                          onClick={() => {
+                            setUploadedFile(null);
+                            setFileUploaded(false);
+                            setUploadStatus('');
+                            setUploadError('');
+                            resetAllStates();
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = '';
+                            }
+                          }}
+                          className="p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all duration-200"
+                          title="Remove file"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
                       </div>
                     )}
                   </div>
