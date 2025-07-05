@@ -72,6 +72,17 @@ export default function Home() {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summarizeError, setSummarizeError] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  
+  // Chat state
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'gru'; content: string }[]>([]);
+  const [chatHasIntroduced, setChatHasIntroduced] = useState(false);
+  
+  // Quiz state
+  const [quiz, setQuiz] = useState<{ id: number; question: string; options: string[]; correct: string }[]>([]);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
+  const [quizResults, setQuizResults] = useState<any>(null);
+  const [isQuizLoading, setIsQuizLoading] = useState(false);
+  const [quizError, setQuizError] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -108,6 +119,7 @@ export default function Home() {
         setFileUploaded(true);
         setUploadedFile(file); // Store the file for later use
         setUploadStatus(data.serverResponse);
+        resetAllStates(); // Reset states when new file is uploaded
         // For images, you can display the uploaded file
         if (data.fileDetails?.type.startsWith('image/')) {
           setUploadStatus(prev => `${prev}\nView at: http://localhost:5000${data.fileDetails?.path}`);
@@ -148,13 +160,32 @@ export default function Home() {
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInputText(e.target.value);
+    const newText = e.target.value;
+    setInputText(newText);
     setActiveInput('text');
+    
     // Clear uploaded file when user starts typing
-    if (e.target.value.trim() && uploadedFile) {
+    if (newText.trim() && uploadedFile) {
       setUploadedFile(null);
       setFileUploaded(false);
     }
+    
+    // Reset states when content changes
+    if (newText !== inputText) {
+      resetAllStates();
+    }
+  };
+
+  // Reset all states when content changes
+  const resetAllStates = () => {
+    setSummary('');
+    setSummarizeError('');
+    setChatMessages([]);
+    setChatHasIntroduced(false);
+    setQuiz([]);
+    setSelectedAnswers({});
+    setQuizResults(null);
+    setQuizError('');
   };
 
   const testimonials = [
@@ -938,11 +969,31 @@ export default function Home() {
                 </Tabs.Content>
                 <Tabs.Content value="chat" className="outline-none p-8 bg-white dark:bg-zinc-800 rounded-b-xl shadow-lg">
                   {/* Chat logic here */}
-                  <ChatWithGru inputText={inputText} uploadedFile={uploadedFile} />
+                  <ChatWithGru 
+                    inputText={inputText} 
+                    uploadedFile={uploadedFile}
+                    messages={chatMessages}
+                    setMessages={setChatMessages}
+                    hasIntroduced={chatHasIntroduced}
+                    setHasIntroduced={setChatHasIntroduced}
+                  />
                 </Tabs.Content>
                 <Tabs.Content value="quiz" className="outline-none p-8 bg-white dark:bg-zinc-800 rounded-b-xl shadow-lg">
                   {/* Quiz logic here */}
-                  <QuizGenerator inputText={inputText} uploadedFile={uploadedFile} />
+                  <QuizGenerator 
+                    inputText={inputText} 
+                    uploadedFile={uploadedFile}
+                    quiz={quiz}
+                    setQuiz={setQuiz}
+                    selectedAnswers={selectedAnswers}
+                    setSelectedAnswers={setSelectedAnswers}
+                    results={quizResults}
+                    setResults={setQuizResults}
+                    isLoading={isQuizLoading}
+                    setIsLoading={setIsQuizLoading}
+                    error={quizError}
+                    setError={setQuizError}
+                  />
                 </Tabs.Content>
               </Tabs.Root>
             )}
@@ -1233,20 +1284,25 @@ export default function Home() {
 // --- ChatWithGru Component ---
 
 type ChatMessage = { role: 'user' | 'gru'; content: string };
-function ChatWithGru({ inputText, uploadedFile }: { inputText: string; uploadedFile: File | null }) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+function ChatWithGru({ 
+  inputText, 
+  uploadedFile, 
+  messages, 
+  setMessages, 
+  hasIntroduced, 
+  setHasIntroduced 
+}: { 
+  inputText: string; 
+  uploadedFile: File | null;
+  messages: ChatMessage[];
+  setMessages: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void;
+  hasIntroduced: boolean;
+  setHasIntroduced: (introduced: boolean) => void;
+}) {
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [hasIntroduced, setHasIntroduced] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-
-  // Reset chat when content changes
-  useEffect(() => {
-    setMessages([]);
-    setHasIntroduced(false);
-    setError('');
-  }, [inputText, uploadedFile]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -1425,12 +1481,33 @@ function ChatWithGru({ inputText, uploadedFile }: { inputText: string; uploadedF
 type QuizQuestion = { id: number; question: string; options: string[]; correct: string };
 type QuizResult = { summary: { score: number; total: number; percentage: number; feedback: string }; results: { isCorrect: boolean; question: string; selectedAnswer: string; correctAnswer: string }[] };
 
-function QuizGenerator({ inputText, uploadedFile }: { inputText: string; uploadedFile: File | null }) {
-  const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
-  const [results, setResults] = useState<QuizResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+function QuizGenerator({ 
+  inputText, 
+  uploadedFile,
+  quiz,
+  setQuiz,
+  selectedAnswers,
+  setSelectedAnswers,
+  results,
+  setResults,
+  isLoading,
+  setIsLoading,
+  error,
+  setError
+}: { 
+  inputText: string; 
+  uploadedFile: File | null;
+  quiz: QuizQuestion[];
+  setQuiz: (quiz: QuizQuestion[] | ((prev: QuizQuestion[]) => QuizQuestion[])) => void;
+  selectedAnswers: Record<number, string>;
+  setSelectedAnswers: (answers: Record<number, string> | ((prev: Record<number, string>) => Record<number, string>)) => void;
+  results: QuizResult | null;
+  setResults: (results: QuizResult | null) => void;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+  error: string;
+  setError: (error: string) => void;
+}) {
 
   const generateQuiz = async () => {
     setIsLoading(true);
@@ -1508,13 +1585,15 @@ function QuizGenerator({ inputText, uploadedFile }: { inputText: string; uploade
   return (
     <div className="space-y-4">
       {quiz.length === 0 && !isLoading && (
-        <button
-          className="px-6 py-3 rounded-full bg-purple-600 text-white font-semibold hover:bg-purple-700 transition-all"
-          onClick={generateQuiz}
-          disabled={isLoading}
-        >
-          Generate Quiz
-        </button>
+        <div className="flex justify-center">
+          <button
+            className="px-6 py-3 rounded-full bg-purple-600 text-white font-semibold hover:bg-purple-700 transition-all"
+            onClick={generateQuiz}
+            disabled={isLoading}
+          >
+            Generate Quiz
+          </button>
+        </div>
       )}
       {isLoading && <div className="text-center text-lg text-purple-700 dark:text-purple-200">Loading...</div>}
       {quiz.length > 0 && !results && (
