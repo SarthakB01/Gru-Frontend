@@ -1008,38 +1008,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-white dark:bg-zinc-900 relative overflow-hidden" >
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-white/10 mix-blend-overlay blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-white/10 mix-blend-overlay blur-3xl"></div>
-        </div>
-
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-            Ready to Transform Your Study Habits?
-          </h2>
-          <p className="text-xl text-indigo-100 mb-8 max-w-3xl mx-auto">
-            Join thousands of students who have already revolutionized their
-            learning process with Gru's AI-powered study tools.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <a
-              href="#"
-              className="px-8 py-3.5 rounded-full text-md font-semibold bg-white text-indigo-700 hover:bg-indigo-50 transition-al duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform hover:scale-105"
-            >
-              Sign Up Free
-            </a>
-            <a
-              href="#"
-              className="px-8 py-3.5 rounded-full text-md font-semibold bg-transparent text-white border-2 border-white hover:bg-white/10 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transform hover:scale-105"
-            >
-              Watch Demo
-            </a>
-          </div>
-        </div>
-      </section >
-
       {/* Features Section */}
       <section id="features" className="py-20 bg-white dark:bg-zinc-900" >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
