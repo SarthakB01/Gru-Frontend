@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
 import * as Tabs from '@radix-ui/react-tabs';
 import {
@@ -71,6 +71,7 @@ export default function Home() {
   const [summary, setSummary] = useState('');
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summarizeError, setSummarizeError] = useState('');
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -105,6 +106,7 @@ export default function Home() {
 
       if (data.success) {
         setFileUploaded(true);
+        setUploadedFile(file); // Store the file for later use
         setUploadStatus(data.serverResponse);
         // For images, you can display the uploaded file
         if (data.fileDetails?.type.startsWith('image/')) {
@@ -113,11 +115,13 @@ export default function Home() {
       } else {
         setUploadError(data.serverResponse || 'Upload failed');
         setFileUploaded(false);
+        setUploadedFile(null);
       }
     } catch (error) {
       console.error('Error uploading file:', error);
       setUploadError('Failed to upload file. Please try again.');
       setFileUploaded(false);
+      setUploadedFile(null);
     } finally {
       setIsLoading(false);
     }
@@ -140,6 +144,16 @@ export default function Home() {
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileUpload(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+    setActiveInput('text');
+    // Clear uploaded file when user starts typing
+    if (e.target.value.trim() && uploadedFile) {
+      setUploadedFile(null);
+      setFileUploaded(false);
     }
   };
 
@@ -736,10 +750,7 @@ export default function Home() {
                   <div className={`transition-all duration-300 ${activeInput === 'upload' ? 'opacity-40 blur-sm' : 'opacity-100'}`}>
                     <textarea
                       value={inputText}
-                      onChange={e => {
-                        setInputText(e.target.value);
-                        setActiveInput('text');
-                      }}
+                      onChange={handleTextChange}
                       onFocus={() => setActiveInput('text')}
                       placeholder="Paste your notes, articles, or study materials here..."
                       className="w-full h-48 p-6 border-2 border-gray-200 dark:border-zinc-700 rounded-xl dark:bg-zinc-800 focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-4 text-lg resize transition-all duration-300 placeholder:text-gray-400"
@@ -801,99 +812,137 @@ export default function Home() {
               </div>
             </div>
 
-            {(inputText.trim() || fileUploaded) && (
+            {(inputText.trim() || uploadedFile) && (
               <Tabs.Root defaultValue="summarize" className="w-full animate-fade-in">
-                <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-1 rounded-t-xl">
-                  <Tabs.List className="flex bg-white/10 backdrop-blur-sm rounded-lg p-1.5 gap-1">
+                <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-1.5 rounded-t-xl shadow-lg">
+                  <Tabs.List className="flex bg-white/10 backdrop-blur-sm rounded-lg p-2 gap-2">
                     <Tabs.Trigger
                       value="summarize"
-                      className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/80 hover:text-white data-[state=active]:bg-white/70 dark:data-[state=active]:bg-zinc-900/80 backdrop-blur-md data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg"
+                      className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/90 hover:text-white hover:bg-white/20 data-[state=active]:bg-white/80 dark:data-[state=active]:bg-zinc-900/80 backdrop-blur-md data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg data-[state=active]:scale-105"
                     >
                       <div className="flex items-center justify-center gap-2">
                         <FileText className="w-5 h-5" />
-                        Summarize
+                        <span className="hidden sm:inline">Summarize</span>
+                        <span className="sm:hidden">Summary</span>
                       </div>
                     </Tabs.Trigger>
                     <Tabs.Trigger
                       value="chat"
-                      className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/80 hover:text-white data-[state=active]:bg-white/70 dark:data-[state=active]:bg-zinc-900/80 backdrop-blur-md data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg"
+                      className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/90 hover:text-white hover:bg-white/20 data-[state=active]:bg-white/80 dark:data-[state=active]:bg-zinc-900/80 backdrop-blur-md data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg data-[state=active]:scale-105"
                     >
                       <div className="flex items-center justify-center gap-2">
                         <MessageCircle className="w-5 h-5" />
-                        Chat with Gru about your document
+                        <span className="hidden sm:inline">Chat with Gru</span>
+                        <span className="sm:hidden">Chat</span>
                       </div>
                     </Tabs.Trigger>
                     <Tabs.Trigger
                       value="quiz"
-                      className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/80 hover:text-white data-[state=active]:bg-white/70 dark:data-[state=active]:bg-zinc-900/80 backdrop-blur-md data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg"
+                      className="flex-1 py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-300 text-white/90 hover:text-white hover:bg-white/20 data-[state=active]:bg-white/80 dark:data-[state=active]:bg-zinc-900/80 backdrop-blur-md data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg data-[state=active]:scale-105"
                     >
                       <div className="flex items-center justify-center gap-2">
                         <Sparkles className="w-5 h-5" />
-                        Make Interactive Quizzes
+                        <span className="hidden sm:inline">Interactive Quizzes</span>
+                        <span className="sm:hidden">Quiz</span>
                       </div>
                     </Tabs.Trigger>
                   </Tabs.List>
                 </div>
-                <Tabs.Content value="summarize" className="outline-none p-8">
+                <Tabs.Content value="summarize" className="outline-none p-8 bg-white dark:bg-zinc-800 rounded-b-xl shadow-lg">
                   {/* Summarize logic here */}
                   {isSummarizing ? (
-                    <div className="text-center text-lg text-purple-700 dark:text-purple-200">Summarizing...</div>
+                    <div className="flex items-center justify-center py-12">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                        <div className="text-lg text-purple-700 dark:text-purple-200">Summarizing your content...</div>
+                      </div>
+                    </div>
                   ) : summary ? (
-                    <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-6">
-                      <h3 className="text-xl font-bold mb-4 text-indigo-700 dark:text-indigo-300">Summary</h3>
-                      <p className="text-gray-800 dark:text-gray-100 whitespace-pre-line">{summary}</p>
+                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-zinc-700 dark:to-zinc-800 rounded-xl shadow p-6 border border-indigo-100 dark:border-zinc-600">
+                      <h3 className="text-xl font-bold mb-4 text-indigo-700 dark:text-indigo-300 flex items-center gap-2">
+                        <FileText className="w-5 h-5" />
+                        Summary
+                      </h3>
+                      <p className="text-gray-800 dark:text-gray-100 whitespace-pre-line leading-relaxed">{summary}</p>
                     </div>
                   ) : (
-                    <button
-                      className="mt-4 px-6 py-3 rounded-full bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-all"
-                      onClick={async () => {
-                        setIsSummarizing(true);
-                        setSummarizeError('');
-                        setSummary('');
-                        try {
-                          let textToSummarize = inputText;
-                          if (fileUploaded) {
-                            // Fetch summary from backend for uploaded file
-                            const res = await fetch('http://localhost:5000/api/ai/summarize-document', {
-                              method: 'POST',
-                              body: new FormData(fileInputRef.current?.form || undefined),
-                            });
-                            const data = await res.json();
-                            if (!res.ok) throw new Error(data.error || 'Failed to summarize document');
-                            setSummary(data.summary);
-                          } else {
-                            // Summarize pasted text
-                            const res = await fetch('http://localhost:5000/api/ai/summarize', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ text: inputText }),
-                            });
-                            const data = await res.json();
-                            if (!res.ok) throw new Error(data.error || 'Failed to summarize text');
-                            setSummary(data.summary);
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="text-center mb-6">
+                        <FileText className="w-16 h-16 text-indigo-400 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Ready to Summarize</h3>
+                        <p className="text-gray-500 dark:text-gray-400">Click the button below to generate a summary of your content</p>
+                      </div>
+                                              <button
+                        className="px-8 py-4 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
+                        disabled={isSummarizing || (!uploadedFile && !inputText.trim())}
+                        onClick={async () => {
+                          setIsSummarizing(true);
+                          setSummarizeError('');
+                          setSummary('');
+                          try {
+                            let textToSummarize = inputText;
+                            if (fileUploaded && uploadedFile) {
+                              // Fetch summary from backend for uploaded file
+                              const formData = new FormData();
+                              formData.append('document', uploadedFile);
+                              
+                              const res = await fetch('http://localhost:5000/api/ai/summarize-document', {
+                                method: 'POST',
+                                body: formData,
+                              });
+                              const data = await res.json();
+                              if (!res.ok) throw new Error(data.error || 'Failed to summarize document');
+                              setSummary(data.summary);
+                            } else if (inputText.trim()) {
+                              // Summarize pasted text
+                              const res = await fetch('http://localhost:5000/api/ai/summarize', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ text: inputText }),
+                              });
+                              const data = await res.json();
+                              if (!res.ok) throw new Error(data.error || 'Failed to summarize text');
+                              setSummary(data.summary);
+                            } else {
+                              throw new Error('Please upload a document or enter text to summarize');
+                            }
+                          } catch (err: any) {
+                            setSummarizeError(err.message || 'Failed to summarize');
+                          } finally {
+                            setIsSummarizing(false);
                           }
-                        } catch (err: any) {
-                          setSummarizeError(err.message || 'Failed to summarize');
-                        } finally {
-                          setIsSummarizing(false);
-                        }
-                      }}
-                      disabled={isSummarizing}
-                    >
-                      Summarize
-                    </button>
+                        }}
+                      >
+                        {isSummarizing ? (
+                          <div className="flex items-center gap-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            Summarizing...
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-5 h-5" />
+                            Summarize Content
+                          </div>
+                        )}
+                      </button>
+                    </div>
                   )}
                   {summarizeError && (
-                    <div className="mt-4 text-red-600 dark:text-red-400">{summarizeError}</div>
+                    <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+                      <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                        <span className="text-lg">⚠️</span>
+                        <span>{summarizeError}</span>
+                      </div>
+                    </div>
                   )}
                 </Tabs.Content>
-                <Tabs.Content value="chat" className="outline-none p-8">
+                <Tabs.Content value="chat" className="outline-none p-8 bg-white dark:bg-zinc-800 rounded-b-xl shadow-lg">
                   {/* Chat logic here */}
-                  <ChatWithGru inputText={inputText} />
+                  <ChatWithGru inputText={inputText} uploadedFile={uploadedFile} />
                 </Tabs.Content>
-                <Tabs.Content value="quiz" className="outline-none p-8">
+                <Tabs.Content value="quiz" className="outline-none p-8 bg-white dark:bg-zinc-800 rounded-b-xl shadow-lg">
                   {/* Quiz logic here */}
-                  <QuizGenerator inputText={inputText} />
+                  <QuizGenerator inputText={inputText} uploadedFile={uploadedFile} />
                 </Tabs.Content>
               </Tabs.Root>
             )}
@@ -1182,33 +1231,98 @@ export default function Home() {
 }
 
 // --- ChatWithGru Component ---
-import { useState } from 'react';
 
 type ChatMessage = { role: 'user' | 'gru'; content: string };
-function ChatWithGru({ inputText }: { inputText: string }) {
+function ChatWithGru({ inputText, uploadedFile }: { inputText: string; uploadedFile: File | null }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [hasIntroduced, setHasIntroduced] = useState(false);
+
+  // Reset chat when content changes
+  useEffect(() => {
+    setMessages([]);
+    setHasIntroduced(false);
+    setError('');
+  }, [inputText, uploadedFile]);
+
+  // Function to clean up repetitive introductions
+  const cleanResponse = (response: string, isFirstMessage: boolean) => {
+    if (isFirstMessage) {
+      return response; // Keep the full response for the first message
+    }
+    
+    // Remove common introduction patterns
+    const introPatterns = [
+      /^Hi! I'm Gru, your AI tutor\. /i,
+      /^Hello! I'm Gru, your AI tutor\. /i,
+      /^Hi there! I'm Gru, your AI tutor\. /i,
+      /^Greetings! I'm Gru, your AI tutor\. /i,
+      /^I'm Gru, your AI tutor\. /i,
+      /^As Gru, your AI tutor, /i,
+      /^As your AI tutor, /i,
+      /^As Gru, /i
+    ];
+    
+    let cleanedResponse = response;
+    for (const pattern of introPatterns) {
+      cleanedResponse = cleanedResponse.replace(pattern, '');
+    }
+    
+    return cleanedResponse.trim();
+  };
 
   const sendMessage = async () => {
     if (!userInput.trim()) return;
     setIsLoading(true);
     setError('');
     setMessages(msgs => [...msgs, { role: 'user', content: userInput }]);
+    
     try {
-      // Use backend endpoint if available, otherwise fallback to Groq API
+      let context = inputText;
+      
+      // If we have an uploaded file but no text, we need to get the file content first
+      if (uploadedFile && !inputText.trim()) {
+        const formData = new FormData();
+        formData.append('document', uploadedFile);
+        
+        // First, get the document content
+        const docRes = await fetch('http://localhost:5000/api/ai/summarize-document', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!docRes.ok) {
+          const docData = await docRes.json();
+          throw new Error(docData.error || 'Failed to process document');
+        }
+        
+        const docData = await docRes.json();
+        context = docData.summary || docData.content || '';
+      }
+      
+      if (!context.trim()) {
+        throw new Error('No content available to chat about. Please upload a document or enter some text.');
+      }
+      
+      // Now send the chat request
       const res = await fetch('http://localhost:5000/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: userInput,
-          context: inputText,
+          context: context,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to get answer');
-      setMessages(msgs => [...msgs, { role: 'gru', content: data.answer }]);
+      
+      const isFirstMessage = messages.length === 0;
+      const cleanedAnswer = cleanResponse(data.answer, isFirstMessage);
+      
+      setMessages(msgs => [...msgs, { role: 'gru', content: cleanedAnswer }]);
+      setHasIntroduced(true);
       setUserInput('');
     } catch (err: any) {
       setError(err.message || 'Failed to get answer');
@@ -1219,34 +1333,81 @@ function ChatWithGru({ inputText }: { inputText: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-4 h-64 overflow-y-auto mb-2">
-        {messages.length === 0 && <div className="text-gray-400">Start chatting with Gru about your document!</div>}
+      <div className="bg-gradient-to-br from-gray-50 to-white dark:from-zinc-700 dark:to-zinc-800 rounded-xl shadow p-4 h-64 overflow-y-auto mb-2 border border-gray-200 dark:border-zinc-600">
+        {messages.length === 0 && (
+          <div className="text-center text-gray-400 mt-8">
+            <MessageCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            <p>Start chatting with Gru about your document!</p>
+            <p className="text-sm mt-1">Ask questions, get explanations, or discuss the content.</p>
+          </div>
+        )}
+        {messages.length === 1 && messages[0].role === 'gru' && (
+          <div className="text-center text-gray-500 text-sm mb-4">
+            💡 <strong>Tip:</strong> You can ask follow-up questions about the content!
+          </div>
+        )}
         {messages.map((msg, idx) => (
-          <div key={idx} className={`mb-2 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}> 
-            <span className={msg.role === 'user' ? 'text-indigo-600 font-semibold' : 'text-purple-700 dark:text-purple-300 font-semibold'}>
-              {msg.role === 'user' ? 'You' : 'Gru'}:
-            </span> {msg.content}
+          <div key={idx} className={`mb-4 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}> 
+            <div className={`inline-block max-w-[80%] p-3 rounded-lg ${
+              msg.role === 'user' 
+                ? 'bg-indigo-600 text-white' 
+                : 'bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600'
+            }`}>
+              <div className={`text-xs font-semibold mb-1 ${
+                msg.role === 'user' ? 'text-indigo-100' : 'text-purple-600 dark:text-purple-400'
+              }`}>
+                {msg.role === 'user' ? 'You' : 'Gru'}
+              </div>
+              <div className={msg.role === 'user' ? 'text-white' : 'text-gray-800 dark:text-gray-200'}>
+                {msg.content}
+              </div>
+            </div>
           </div>
         ))}
+        {isLoading && (
+          <div className="text-left mb-4">
+            <div className="inline-block max-w-[80%] p-3 rounded-lg bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600">
+              <div className="text-xs font-semibold mb-1 text-purple-600 dark:text-purple-400">Gru</div>
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+                Thinking...
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       <div className="flex gap-2">
         <input
-          className="flex-1 border rounded px-3 py-2 dark:bg-zinc-900"
+          className="flex-1 border border-gray-300 dark:border-zinc-600 rounded-lg px-4 py-3 dark:bg-zinc-900 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
           value={userInput}
           onChange={e => setUserInput(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
           placeholder="Ask Gru a question about your material..."
           disabled={isLoading}
         />
         <button
-          className="px-4 py-2 bg-purple-600 text-white rounded disabled:opacity-50"
+          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg disabled:opacity-50 hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold"
           onClick={sendMessage}
           disabled={isLoading || !userInput.trim()}
         >
-          Send
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Sending...
+            </div>
+          ) : (
+            'Send'
+          )}
         </button>
       </div>
-      {error && <div className="text-red-600 dark:text-red-400">{error}</div>}
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+          <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+            <span className="text-lg">⚠️</span>
+            <span>{error}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1255,7 +1416,7 @@ function ChatWithGru({ inputText }: { inputText: string }) {
 type QuizQuestion = { id: number; question: string; options: string[]; correct: string };
 type QuizResult = { summary: { score: number; total: number; percentage: number; feedback: string }; results: { isCorrect: boolean; question: string; selectedAnswer: string; correctAnswer: string }[] };
 
-function QuizGenerator({ inputText }: { inputText: string }) {
+function QuizGenerator({ inputText, uploadedFile }: { inputText: string; uploadedFile: File | null }) {
   const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [results, setResults] = useState<QuizResult | null>(null);
@@ -1267,11 +1428,38 @@ function QuizGenerator({ inputText }: { inputText: string }) {
     setError('');
     setQuiz([]);
     setResults(null);
+    
     try {
+      let textToProcess = inputText;
+      
+      // If we have an uploaded file but no text, we need to get the file content first
+      if (uploadedFile && !inputText.trim()) {
+        const formData = new FormData();
+        formData.append('document', uploadedFile);
+        
+        // First, get the document content
+        const docRes = await fetch('http://localhost:5000/api/ai/summarize-document', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!docRes.ok) {
+          const docData = await docRes.json();
+          throw new Error(docData.error || 'Failed to process document');
+        }
+        
+        const docData = await docRes.json();
+        textToProcess = docData.summary || docData.content || '';
+      }
+      
+      if (!textToProcess.trim()) {
+        throw new Error('No content available to generate quiz from. Please upload a document or enter some text.');
+      }
+      
       const res = await fetch('http://localhost:5000/api/ai/generate-quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: inputText }),
+        body: JSON.stringify({ text: textToProcess }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate quiz');
