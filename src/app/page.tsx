@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
 import * as Tabs from '@radix-ui/react-tabs';
 import {
-  Send,
   Menu,
   User,
   SunMoon,
@@ -18,10 +17,8 @@ import {
   Upload,
   FileUp,
   MessageCircle,
-  LineChart,
-  Users,
-  ArrowRight,
 } from 'lucide-react';
+import Image from 'next/image';
 
 import {
   SignInButton,
@@ -31,8 +28,7 @@ import {
   UserButton,
 } from '@clerk/nextjs';
 
-import MessageSender from '../components/MessageSender';
-import DocumentProcessor from '../components/DocumentProcessor';
+
 
 import { useAuth, useClerk } from '@clerk/nextjs';
 
@@ -49,7 +45,7 @@ type FileResponse = {
 
 export default function Home() {
 
-  const { getToken, isSignedIn } = useAuth();
+  const { isSignedIn } = useAuth();
   const clerk = useClerk();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -58,8 +54,6 @@ export default function Home() {
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('home');
   const [scrollY, setScrollY] = useState(0);
-  const [showSignup, setShowSignup] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0);
   const [activeInput, setActiveInput] = useState<'text' | 'upload'>('text');
 
@@ -75,12 +69,11 @@ export default function Home() {
   
   // Chat state
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'gru'; content: string }[]>([]);
-  const [chatHasIntroduced, setChatHasIntroduced] = useState(false);
   
   // Quiz state
   const [quiz, setQuiz] = useState<{ id: number; question: string; options: string[]; correct: string }[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
-  const [quizResults, setQuizResults] = useState<any>(null);
+  const [quizResults, setQuizResults] = useState<QuizResult | null>(null);
   const [isQuizLoading, setIsQuizLoading] = useState(false);
   const [quizError, setQuizError] = useState('');
 
@@ -92,12 +85,47 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const testimonialsData = [
+    {
+      name: 'Alex K.',
+      role: 'Computer Science Student',
+      text:
+        'Gru helped me prepare for my finals in half the time! The interactive quizzes made retaining complex algorithms so much easier.',
+      avatar: 'https://placehold.co/56x56?text=AK',
+      rating: 5,
+    },
+    {
+      name: 'Jamie L.',
+      role: 'Biology Major',
+      text:
+        "Converting my lecture notes into interactive quizzes made studying so much more engaging. I've improved my grades by 15% this semester!",
+      avatar: 'https://placehold.co/56x56?text=JL',
+      rating: 4,
+    },
+    {
+      name: 'Sam T.',
+      role: 'Engineering Student',
+      text:
+        "The AI actually understands the context of my questions and provides relevant answers. It's like having a personal tutor available 24/7.",
+      avatar: 'https://placehold.co/56x56?text=ST',
+      rating: 5,
+    },
+    {
+      name: 'Taylor R.',
+      role: 'Medical Student',
+      text:
+        'Gru has transformed how I study complex medical terminologies and concepts. The quiz generation is surprisingly accurate.',
+      avatar: 'https://placehold.co/56x56?text=TR',
+      rating: 3,
+    },
+  ];
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveTestimonialIndex((prev) => (prev + 1) % testimonials.length);
+      setActiveTestimonialIndex((prev) => (prev + 1) % testimonialsData.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [testimonialsData.length]);
 
   const handleFileUpload = async (file: File) => {
     setIsLoading(true);
@@ -181,47 +209,11 @@ export default function Home() {
     setSummary('');
     setSummarizeError('');
     setChatMessages([]);
-    setChatHasIntroduced(false);
     setQuiz([]);
     setSelectedAnswers({});
     setQuizResults(null);
     setQuizError('');
   };
-
-  const testimonials = [
-    {
-      name: 'Alex K.',
-      role: 'Computer Science Student',
-      text:
-        'Gru helped me prepare for my finals in half the time! The interactive quizzes made retaining complex algorithms so much easier.',
-      avatar: 'https://placehold.co/56x56?text=AK',
-      rating: 5,
-    },
-    {
-      name: 'Jamie L.',
-      role: 'Biology Major',
-      text:
-        "Converting my lecture notes into interactive quizzes made studying so much more engaging. I've improved my grades by 15% this semester!",
-      avatar: 'https://placehold.co/56x56?text=JL',
-      rating: 4,
-    },
-    {
-      name: 'Sam T.',
-      role: 'Engineering Student',
-      text:
-        "The AI actually understands the context of my questions and provides relevant answers. It's like having a personal tutor available 24/7.",
-      avatar: 'https://placehold.co/56x56?text=ST',
-      rating: 5,
-    },
-    {
-      name: 'Taylor R.',
-      role: 'Medical Student',
-      text:
-        'Gru has transformed how I study complex medical terminologies and concepts. The quiz generation is surprisingly accurate.',
-      avatar: 'https://placehold.co/56x56?text=TR',
-      rating: 3,
-    },
-  ];
 
   const features = [
     {
@@ -282,116 +274,9 @@ export default function Home() {
     },
   ];
 
-  const solutions = [
-    {
-      title: 'Document Analysis & Quiz Generation',
-      description:
-        'Upload your study materials and let Gru create tailored quizzes based on the content.',
-    },
-    {
-      title: 'Interactive Learning Path',
-      description:
-        'Progress through dynamically generated questions that adapt to your performance.',
-    },
-    {
-      title: 'AI-Powered Understanding',
-      description:
-        'Get instant clarification on complex topics through contextual AI conversations.',
-    },
-  ];
 
-  const FeatureCard = ({
-    icon,
-    title,
-    description,
-  }: {
-    icon: React.ReactNode;
-    title: string;
-    description: string;
-  }) => (
-    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 dark:border-zinc-700">
-      <div className="flex justify-center">{icon}</div>
-      <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white text-center">
-        {title}
-      </h3>
-      <p className="text-gray-600 dark:text-gray-300 text-center">
-        {description}
-      </p>
-    </div>
-  );
 
-  const ProblemCard = ({
-    icon,
-    title,
-    description,
-  }: {
-    icon: React.ReactNode;
-    title: string;
-    description: string;
-  }) => (
-    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 p-6 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 text-center transform transition-all duration-300 hover:scale-105">
-      <div className="flex justify-center">{icon}</div>
-      <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-        {title}
-      </h3>
-      <p className="text-gray-600 dark:text-gray-300">{description}</p>
-    </div>
-  );
 
-  const TestimonialCard = ({
-    testimonial,
-    isActive,
-  }: {
-    testimonial: {
-      name: string;
-      role: string;
-      text: string;
-      avatar: string;
-      rating: number;
-    };
-    isActive: boolean;
-  }) => (
-    <div
-      className={`p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 transition-all duration-300 ${isActive
-        ? 'opacity-100 transform scale-100'
-        : 'opacity-50 transform scale-95'
-        }`}
-    >
-      <div className="flex items-center mb-4">
-        <img
-          src={testimonial.avatar}
-          alt={testimonial.name}
-          className="w-12 h-12 rounded-full mr-4 object-cover"
-        />
-        <div>
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {testimonial.name}
-          </h4>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {testimonial.role}
-          </p>
-        </div>
-        <div className="ml-auto flex">
-          {[...Array(5)].map((_, i) => (
-            <svg
-              key={i}
-              className={`w-5 h-5 ${i < testimonial.rating
-                ? 'text-yellow-400'
-                : 'text-gray-300 dark:text-gray-600'
-                }`}
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-          ))}
-        </div>
-      </div>
-      <p className="text-gray-600 dark:text-gray-300 italic">
-        "{testimonial.text}"
-      </p>
-    </div>
-  );
 
   const NavButton = ({
     href,
@@ -605,7 +490,7 @@ export default function Home() {
               }}
               className="inline-flex items-center justify-center rounded-full text-md font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 px-8 py-3.5 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 transform hover:scale-105"
             >
-              Get started - it's free!
+              Get started - it&apos;s free!
               <ChevronRight className="w-5 h-5 ml-2 transition-all duration-300 group-hover:translate-x-1" />
             </button>
           </div>
@@ -623,9 +508,11 @@ export default function Home() {
               </div>
             </div>
             <div className="p-4">
-              <img
+              <Image
                 src="https://placehold.co/56x56?text=Gru"
                 alt="Gru AI Interface"
+                width={56}
+                height={56}
                 className="rounded-lg border border-gray-200 dark:border-zinc-600 shadow-md"
               />
             </div>
@@ -676,7 +563,7 @@ export default function Home() {
               <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 data
               </span>
-              . Here's what it coughed up.
+              . Here&apos;s what it coughed up.
             </p>
 
           </div>
@@ -958,7 +845,6 @@ export default function Home() {
                           setSummarizeError('');
                           setSummary('');
                           try {
-                            let textToSummarize = inputText;
                             if (fileUploaded && uploadedFile) {
                               // Fetch summary from backend for uploaded file
                               const formData = new FormData();
@@ -984,8 +870,9 @@ export default function Home() {
                             } else {
                               throw new Error('Please upload a document or enter text to summarize');
                             }
-                          } catch (err: any) {
-                            setSummarizeError(err.message || 'Failed to summarize');
+                          } catch (err: unknown) {
+                            const errorMessage = err instanceof Error ? err.message : 'Failed to summarize';
+                            setSummarizeError(errorMessage);
                           } finally {
                             setIsSummarizing(false);
                           }
@@ -1016,14 +903,12 @@ export default function Home() {
                 </Tabs.Content>
                 <Tabs.Content value="chat" className="outline-none p-8 bg-white dark:bg-zinc-800 rounded-b-xl shadow-lg">
                   {/* Chat logic here */}
-                  <ChatWithGru 
-                    inputText={inputText} 
-                    uploadedFile={uploadedFile}
-                    messages={chatMessages}
-                    setMessages={setChatMessages}
-                    hasIntroduced={chatHasIntroduced}
-                    setHasIntroduced={setChatHasIntroduced}
-                  />
+                                  <ChatWithGru
+                  inputText={inputText}
+                  uploadedFile={uploadedFile}
+                  messages={chatMessages}
+                  setMessages={setChatMessages}
+                />
                 </Tabs.Content>
                 <Tabs.Content value="quiz" className="outline-none p-8 bg-white dark:bg-zinc-800 rounded-b-xl shadow-lg">
                   {/* Quiz logic here */}
@@ -1102,19 +987,21 @@ export default function Home() {
 
           <div className="relative">
             <div className="grid md:grid-cols-2 gap-8">
-              {testimonials.map((testimonial, index) => (
+              {testimonialsData.map((testimonial, index) => (
                 <div
                   key={index}
                   className={`p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-md border border-gray-100 dark:border-zinc-700 transition-all duration-300 ${index === activeTestimonialIndex ||
-                    index === (activeTestimonialIndex + 1) % testimonials.length
+                    index === (activeTestimonialIndex + 1) % testimonialsData.length
                     ? 'opacity-100 transform scale-100'
                     : 'opacity-50 transform scale-95'
                     }`}
                 >
                   <div className="flex items-center mb-4">
-                    <img
+                    <Image
                       src={testimonial.avatar}
                       alt={testimonial.name}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 rounded-full mr-4 object-cover"
                     />
                     <div>
@@ -1142,14 +1029,14 @@ export default function Home() {
                     </div>
                   </div>
                   <p className="text-gray-600 dark:text-gray-300 italic">
-                    "{testimonial.text}"
+                    &ldquo;{testimonial.text}&rdquo;
                   </p>
                 </div>
               ))}
             </div>
 
             <div className="mt-10 flex justify-center space-x-2">
-              {testimonials.map((_, index) => (
+              {testimonialsData.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveTestimonialIndex(index)}
@@ -1303,16 +1190,12 @@ function ChatWithGru({
   inputText, 
   uploadedFile, 
   messages, 
-  setMessages, 
-  hasIntroduced, 
-  setHasIntroduced 
+  setMessages
 }: { 
   inputText: string; 
   uploadedFile: File | null;
   messages: ChatMessage[];
   setMessages: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void;
-  hasIntroduced: boolean;
-  setHasIntroduced: (introduced: boolean) => void;
 }) {
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -1403,9 +1286,9 @@ function ChatWithGru({
       const cleanedAnswer = cleanResponse(data.answer, isFirstMessage);
       
       setMessages(msgs => [...msgs, { role: 'gru', content: cleanedAnswer }]);
-      setHasIntroduced(true);
-    } catch (err: any) {
-      setError(err.message || 'Failed to get answer');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to get answer';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -1565,8 +1448,9 @@ function QuizGenerator({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate quiz');
       setQuiz(data.quiz.questions);
-    } catch (err: any) {
-      setError(err.message || 'Failed to generate quiz');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate quiz';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -1590,8 +1474,9 @@ function QuizGenerator({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to verify answers');
       setResults(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to verify answers');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to verify answers';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -1,4 +1,5 @@
 import { useState, FormEvent, ChangeEvent } from 'react';
+import Image from 'next/image';
 
 type FileResponse = {
   success: boolean;
@@ -158,9 +159,11 @@ export default function MessageSender() {
           {filePreview && (
             <div className="mt-2">
               <p className="text-sm font-medium mb-1">Preview:</p>
-              <img 
+              <Image 
                 src={filePreview} 
                 alt="Preview" 
+                width={160}
+                height={160}
                 className="max-h-40 rounded border border-gray-200" 
               />
             </div>

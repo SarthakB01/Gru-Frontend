@@ -17,13 +17,28 @@ interface QuizAnswer {
   correctAnswer: string;
 }
 
+interface QuizResult {
+  summary: {
+    score: number;
+    total: number;
+    percentage: number;
+    feedback: string;
+  };
+  results: {
+    isCorrect: boolean;
+    question: string;
+    selectedAnswer: string;
+    correctAnswer: string;
+  }[];
+}
+
 export default function TextSummarizer() {
   const [text, setText] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [summary, setSummary] = useState('');
   const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
-  const [quizResults, setQuizResults] = useState<any>(null);
+  const [quizResults, setQuizResults] = useState<QuizResult | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -360,8 +375,8 @@ export default function TextSummarizer() {
           <div className="mt-6 p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
             <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Quiz Results:</h3>
             <div className="space-y-4">
-              {quizResults.results.map((result: any) => (
-                <div key={result.questionId} className="p-4 bg-white dark:bg-zinc-800 rounded-lg">
+              {quizResults.results.map((result, index) => (
+                <div key={index} className="p-4 bg-white dark:bg-zinc-800 rounded-lg">
                   <p className="font-medium mb-2">{result.question}</p>
                   <p className={`mb-1 ${result.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
                     Your answer: {result.selectedAnswer}
@@ -369,7 +384,6 @@ export default function TextSummarizer() {
                   {!result.isCorrect && (
                     <p className="text-gray-600">Correct answer: {result.correctAnswer}</p>
                   )}
-                  <p className="text-sm text-gray-500 mt-2">{result.feedback}</p>
                 </div>
               ))}
               <div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
