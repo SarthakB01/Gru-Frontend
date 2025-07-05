@@ -1239,6 +1239,7 @@ function ChatWithGru({ inputText, uploadedFile }: { inputText: string; uploadedF
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [hasIntroduced, setHasIntroduced] = useState(false);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Reset chat when content changes
   useEffect(() => {
@@ -1246,6 +1247,13 @@ function ChatWithGru({ inputText, uploadedFile }: { inputText: string; uploadedF
     setHasIntroduced(false);
     setError('');
   }, [inputText, uploadedFile]);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages, isLoading]);
 
   // Function to clean up repetitive introductions
   const cleanResponse = (response: string, isFirstMessage: boolean) => {
@@ -1275,9 +1283,11 @@ function ChatWithGru({ inputText, uploadedFile }: { inputText: string; uploadedF
 
   const sendMessage = async () => {
     if (!userInput.trim()) return;
+    const currentInput = userInput.trim();
+    setUserInput(''); // Clear input immediately
     setIsLoading(true);
     setError('');
-    setMessages(msgs => [...msgs, { role: 'user', content: userInput }]);
+    setMessages(msgs => [...msgs, { role: 'user', content: currentInput }]);
     
     try {
       let context = inputText;
@@ -1323,7 +1333,6 @@ function ChatWithGru({ inputText, uploadedFile }: { inputText: string; uploadedF
       
       setMessages(msgs => [...msgs, { role: 'gru', content: cleanedAnswer }]);
       setHasIntroduced(true);
-      setUserInput('');
     } catch (err: any) {
       setError(err.message || 'Failed to get answer');
     } finally {
@@ -1333,7 +1342,7 @@ function ChatWithGru({ inputText, uploadedFile }: { inputText: string; uploadedF
 
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-br from-gray-50 to-white dark:from-zinc-700 dark:to-zinc-800 rounded-xl shadow p-4 h-64 overflow-y-auto mb-2 border border-gray-200 dark:border-zinc-600">
+      <div ref={chatContainerRef} className="bg-gradient-to-br from-gray-50 to-white dark:from-zinc-700 dark:to-zinc-800 rounded-xl shadow p-4 h-64 overflow-y-auto mb-2 border border-gray-200 dark:border-zinc-600">
         {messages.length === 0 && (
           <div className="text-center text-gray-400 mt-8">
             <MessageCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
