@@ -1,5 +1,6 @@
 import { useState, FormEvent, ChangeEvent } from 'react';
 import Image from 'next/image';
+import { API_ENDPOINTS, API_BASE_URL } from '@/lib/config';
 
 type FileResponse = {
   success: boolean;
@@ -54,7 +55,7 @@ export default function MessageSender() {
     setIsLoading(true);
     
     try {
-      const res = await fetch('http://localhost:5000/api/message', {
+      const res = await fetch(API_ENDPOINTS.MESSAGE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,7 +87,7 @@ export default function MessageSender() {
     formData.append('file', file);
     
     try {
-      const res = await fetch('http://localhost:5000/api/upload', {
+      const res = await fetch(API_ENDPOINTS.UPLOAD, {
         method: 'POST',
         body: formData,
       });
@@ -97,7 +98,7 @@ export default function MessageSender() {
       // For images, display the uploaded file link
       if (data.fileDetails?.type.startsWith('image/')) {
         setResponse(response => response + 
-          `\nView uploaded image: http://localhost:5000${data.fileDetails?.path}`);
+          `\nView uploaded image: ${API_BASE_URL}${data.fileDetails?.path}`);
       }
     } catch (error) {
       console.error('Error uploading file:', error);

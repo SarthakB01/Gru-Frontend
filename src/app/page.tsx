@@ -31,6 +31,7 @@ import {
 
 
 import { useAuth, useClerk } from '@clerk/nextjs';
+import { API_ENDPOINTS, API_BASE_URL } from '@/lib/config';
 
 type FileResponse = {
   success: boolean;
@@ -136,7 +137,7 @@ export default function Home() {
     formData.append('file', file);
 
     try {
-      const res = await fetch('http://localhost:5000/api/upload', {
+      const res = await fetch(API_ENDPOINTS.UPLOAD, {
         method: 'POST',
         body: formData,
       });
@@ -150,7 +151,7 @@ export default function Home() {
         resetAllStates(); // Reset states when new file is uploaded
         // For images, you can display the uploaded file
         if (data.fileDetails?.type.startsWith('image/')) {
-          setUploadStatus(prev => `${prev}\nView at: http://localhost:5000${data.fileDetails?.path}`);
+          setUploadStatus(prev => `${prev}\nView at: ${API_BASE_URL}${data.fileDetails?.path}`);
         }
       } else {
         setUploadError(data.serverResponse || 'Upload failed');
@@ -850,7 +851,7 @@ export default function Home() {
                               const formData = new FormData();
                               formData.append('document', uploadedFile);
                               
-                              const res = await fetch('http://localhost:5000/api/ai/summarize-document', {
+                              const res = await fetch(API_ENDPOINTS.SUMMARIZE_DOCUMENT, {
                                 method: 'POST',
                                 body: formData,
                               });
@@ -859,7 +860,7 @@ export default function Home() {
                               setSummary(data.summary);
                             } else if (inputText.trim()) {
                               // Summarize pasted text
-                              const res = await fetch('http://localhost:5000/api/ai/summarize', {
+                              const res = await fetch(API_ENDPOINTS.SUMMARIZE, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ text: inputText }),
@@ -1271,7 +1272,7 @@ function ChatWithGru({
       }
       
       // Now send the chat request
-      const res = await fetch('http://localhost:5000/api/ai/chat', {
+      const res = await fetch(API_ENDPOINTS.CHAT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1440,7 +1441,7 @@ function QuizGenerator({
         throw new Error('No content available to generate quiz from. Please upload a document or enter some text.');
       }
       
-      const res = await fetch('http://localhost:5000/api/ai/generate-quiz', {
+      const res = await fetch(API_ENDPOINTS.GENERATE_QUIZ, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: textToProcess }),
@@ -1466,7 +1467,7 @@ function QuizGenerator({
         selectedAnswer: selectedAnswers[q.id] || '',
         correctAnswer: q.correct,
       }));
-      const res = await fetch('http://localhost:5000/api/ai/verify-answers', {
+      const res = await fetch(API_ENDPOINTS.VERIFY_ANSWERS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers }),

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FileText, Upload, X, Brain, Volume2 } from 'lucide-react';
+import { API_ENDPOINTS } from '@/lib/config';
 
 type ProcessingType = 'summary' | 'quiz' | 'speech';
 
@@ -91,7 +92,7 @@ export default function TextSummarizer() {
         const formData = new FormData();
         formData.append('document', selectedFile);
         
-        const response = await fetch('http://localhost:5000/api/ai/summarize-document', {
+        const response = await fetch(API_ENDPOINTS.SUMMARIZE_DOCUMENT, {
           method: 'POST',
           body: formData,
         });
@@ -120,7 +121,7 @@ export default function TextSummarizer() {
       switch (processingType) {
         case 'summary':
           if (!selectedFile) {
-            const response = await fetch('http://localhost:5000/api/ai/summarize', {
+            const response = await fetch(API_ENDPOINTS.SUMMARIZE, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ text: textToProcess }),
@@ -139,7 +140,7 @@ export default function TextSummarizer() {
           break;
 
         case 'quiz':
-          const quizResponse = await fetch('http://localhost:5000/api/ai/generate-quiz', {
+          const quizResponse = await fetch(API_ENDPOINTS.GENERATE_QUIZ, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: textToProcess }),
@@ -155,7 +156,7 @@ export default function TextSummarizer() {
           break;
 
         case 'speech':
-          const speechResponse = await fetch('http://localhost:5000/api/ai/text-to-speech', {
+          const speechResponse = await fetch(API_ENDPOINTS.TEXT_TO_SPEECH, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: textToProcess }),
@@ -195,7 +196,7 @@ export default function TextSummarizer() {
     }));
 
     try {
-      const response = await fetch('http://localhost:5000/api/ai/verify-answers', {
+      const response = await fetch(API_ENDPOINTS.VERIFY_ANSWERS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers })

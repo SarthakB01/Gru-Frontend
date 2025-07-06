@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { API_ENDPOINTS } from '@/lib/config';
 import { UploadCloud } from "lucide-react";
 
 export default function UploadForm() {
@@ -33,7 +34,7 @@ export default function UploadForm() {
     setStatus("Uploading...");
 
     try {
-      const res = await fetch("http://localhost:5000/api/ai/summarize-document", {
+              const res = await fetch(API_ENDPOINTS.SUMMARIZE_DOCUMENT, {
         method: "POST",
         body: formData,
       });

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FileText, Brain, Volume2, Upload, X } from 'lucide-react';
+import { API_ENDPOINTS } from '@/lib/config';
 
 type ProcessingOption = 'summary' | 'quiz' | 'speech';
 
@@ -86,11 +87,11 @@ export default function DocumentProcessor() {
         formData.append('document', selectedFile);
         let endpoint = '';
         if (processingOption === 'summary') {
-          endpoint = 'http://localhost:5000/api/ai/summarize-document';
+          endpoint = API_ENDPOINTS.SUMMARIZE_DOCUMENT;
         } else if (processingOption === 'quiz') {
-          endpoint = 'http://localhost:5000/api/ai/generate-quiz';
+          endpoint = API_ENDPOINTS.GENERATE_QUIZ;
         } else if (processingOption === 'speech') {
-          endpoint = 'http://localhost:5000/api/ai/text-to-speech';
+          endpoint = API_ENDPOINTS.TEXT_TO_SPEECH;
         }
         const response = await fetch(endpoint, {
           method: 'POST',
@@ -122,7 +123,7 @@ export default function DocumentProcessor() {
       }
       // If no file, process text
       if (processingOption === 'summary') {
-        const response = await fetch('http://localhost:5000/api/ai/summarize', {
+        const response = await fetch(API_ENDPOINTS.SUMMARIZE, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: textToProcess }),
@@ -136,7 +137,7 @@ export default function DocumentProcessor() {
         }
         setSummary(data.summary);
       } else if (processingOption === 'quiz') {
-        const quizResponse = await fetch('http://localhost:5000/api/ai/generate-quiz', {
+        const quizResponse = await fetch(API_ENDPOINTS.GENERATE_QUIZ, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: textToProcess }),
@@ -150,7 +151,7 @@ export default function DocumentProcessor() {
         }
         setQuiz(quizData.quiz.questions);
       } else if (processingOption === 'speech') {
-        const speechResponse = await fetch('http://localhost:5000/api/ai/text-to-speech', {
+        const speechResponse = await fetch(API_ENDPOINTS.TEXT_TO_SPEECH, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: textToProcess }),
@@ -186,7 +187,7 @@ export default function DocumentProcessor() {
       correctAnswer: q.correct
     }));
     try {
-      const response = await fetch('http://localhost:5000/api/ai/verify-answers', {
+      const response = await fetch(API_ENDPOINTS.VERIFY_ANSWERS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers })

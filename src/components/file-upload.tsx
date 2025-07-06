@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { API_ENDPOINTS } from '@/lib/config';
 
 export default function FileUpload() {
   const [file, setFile] = useState<File | null>(null);
@@ -32,7 +33,7 @@ export default function FileUpload() {
     console.log("Token is: ", token);
   
     try {
-      const res = await fetch('http://localhost:5000/upload', {
+      const res = await fetch(API_ENDPOINTS.LEGACY_UPLOAD, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`, // 👈 include token here
