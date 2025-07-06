@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ClerkProvider } from "@clerk/nextjs";
+import SessionProvider from "@/components/SessionProvider";
 
 export const metadata: Metadata = {
   title: "Gru AI",
@@ -15,19 +15,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <head>
-          <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&display=swap');
-        `}</style>
-        </head>
-        <body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&display=swap');
+      `}</style>
+      </head>
+      <body>
+        <SessionProvider>
           <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
             {children}
           </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+        </SessionProvider>
+      </body>
+    </html>
   )
 }

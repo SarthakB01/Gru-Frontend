@@ -20,17 +20,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 
-import {
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs';
-
-
-
-import { useAuth, useClerk } from '@clerk/nextjs';
+import { useSession, signIn, signOut } from 'next-auth/react';
 import { API_ENDPOINTS, API_BASE_URL } from '@/lib/config';
 
 type FileResponse = {
@@ -46,8 +36,8 @@ type FileResponse = {
 
 export default function Home() {
 
-  const { isSignedIn } = useAuth();
-  const clerk = useClerk();
+  const { data: session, status } = useSession();
+  const isSignedIn = status === 'authenticated';
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [fileUploaded, setFileUploaded] = useState(false);
@@ -371,21 +361,47 @@ export default function Home() {
 
               {/* Auth buttons */}
               <div className="ml-4 flex items-center gap-2">
-                <SignedOut>
-                  <SignInButton mode="modal">
-                    <button className="px-3 py-1.5 rounded-full bg-purple-500 text-white hover:bg-indigo-700 text-sm shadow-sm">
+                {!isSignedIn ? (
+                  <>
+                    <button 
+                      onClick={() => signIn('google')}
+                      className="px-3 py-1.5 rounded-full bg-purple-500 text-white hover:bg-indigo-700 text-sm shadow-sm"
+                    >
                       Log In
                     </button>
-                  </SignInButton>
-                  <SignUpButton mode="modal">
-                    <button className="px-3 py-1.5 rounded-full bg-purple-700 text-white hover:bg-purple-700 text-sm shadow-sm">
+                    <button 
+                      onClick={() => signIn('google')}
+                      className="px-3 py-1.5 rounded-full bg-purple-700 text-white hover:bg-purple-700 text-sm shadow-sm"
+                    >
                       Sign Up
                     </button>
-                  </SignUpButton>
-                </SignedOut>
-                <SignedIn>
-                  <UserButton afterSignOutUrl="/" />
-                </SignedIn>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-zinc-800">
+                      {session?.user?.image ? (
+                        <Image
+                          src={session.user.image}
+                          alt={session.user.name || 'User'}
+                          width={24}
+                          height={24}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                      )}
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        {session?.user?.name || 'User'}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => signOut()}
+                      className="px-3 py-1.5 rounded-full bg-gray-500 text-white hover:bg-gray-600 text-sm shadow-sm"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -486,7 +502,7 @@ export default function Home() {
                     howItWorksSection.scrollIntoView({ behavior: 'smooth' });
                   }
                 } else {
-                  clerk.openSignIn();
+                  signIn('google');
                 }
               }}
               className="inline-flex items-center justify-center rounded-full text-md font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 px-8 py-3.5 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 transform hover:scale-105"
@@ -1253,7 +1269,7 @@ function ChatWithGru({
         formData.append('document', uploadedFile);
         
         // First, get the document content
-        const docRes = await fetch('http://localhost:5000/api/ai/summarize-document', {
+        const docRes = await fetch(API_ENDPOINTS.SUMMARIZE_DOCUMENT, {
           method: 'POST',
           body: formData,
         });
@@ -1423,7 +1439,7 @@ function QuizGenerator({
         formData.append('document', uploadedFile);
         
         // First, get the document content
-        const docRes = await fetch('http://localhost:5000/api/ai/summarize-document', {
+        const docRes = await fetch(API_ENDPOINTS.SUMMARIZE_DOCUMENT, {
           method: 'POST',
           body: formData,
         });
