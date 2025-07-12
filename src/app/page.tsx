@@ -1308,9 +1308,7 @@ function ChatWithGru({
       if (!res.ok) throw new Error(data.error || 'Failed to get answer');
       
       const isFirstMessage = messages.length === 0;
-      const cleanedAnswer = cleanResponse(data.answer, isFirstMessage);
-      
-      setMessages(msgs => [...msgs, { role: 'gru', content: cleanedAnswer }]);
+      setMessages(msgs => [...msgs, { role: 'gru', content: data.answer }]);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get answer';
       setError(errorMessage);
