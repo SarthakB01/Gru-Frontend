@@ -1241,7 +1241,12 @@ function ChatWithGru({
       /^I'm Gru, your AI tutor\. /i,
       /^As Gru, your AI tutor, /i,
       /^As your AI tutor, /i,
-      /^As Gru, /i
+      /^As Gru, /i,
+      /^Hello there! /i, // Added this pattern
+      /^Hello! /i,       // Also catch generic 'Hello!'
+      /^Hi there! /i,    // And 'Hi there!'
+      /^Hi! /i,          // And 'Hi!'
+      /^Greetings! /i    // And 'Greetings!'
     ];
     
     let cleanedResponse = response;
@@ -1288,12 +1293,15 @@ function ChatWithGru({
       }
       
       // Now send the chat request
+      // Prepare conversation history (last 5 messages, excluding current input)
+      const history = messages.slice(-5);
       const res = await fetch(API_ENDPOINTS.CHAT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: userInput,
           context: context,
+          history: history,
         }),
       });
       const data = await res.json();
@@ -1559,7 +1567,6 @@ function QuizGenerator({
               Quiz Results
             </h3>
           </div>
-          
           {/* Score Summary */}
           <div className="p-6">
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg p-4 mb-6 border border-green-200 dark:border-green-800">
@@ -1575,7 +1582,18 @@ function QuizGenerator({
                 </div>
               </div>
             </div>
-            
+            {/* Try Again Button */}
+            <div className="flex justify-center mb-6">
+              <button
+                className="px-6 py-2 rounded-full bg-purple-600 text-white font-semibold hover:bg-purple-700 transition-all"
+                onClick={() => {
+                  setSelectedAnswers({});
+                  setResults(null);
+                }}
+              >
+                Try Again
+              </button>
+            </div>
             {/* Individual Question Results */}
             <div className="space-y-4">
               <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Question Breakdown</h4>
@@ -1622,16 +1640,6 @@ function QuizGenerator({
             
             {/* Action Buttons */}
             <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-zinc-700">
-              <button
-                onClick={() => {
-                  setQuiz([]);
-                  setResults(null);
-                  setSelectedAnswers({});
-                }}
-                className="flex-1 px-4 py-2 bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors font-medium"
-              >
-                Try Again
-              </button>
               <button
                 onClick={generateQuiz}
                 className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-medium"
