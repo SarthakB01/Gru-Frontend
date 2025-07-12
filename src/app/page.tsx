@@ -1226,37 +1226,6 @@ function ChatWithGru({
     }
   }, [messages, isLoading]);
 
-  // Function to clean up repetitive introductions
-  const cleanResponse = (response: string, isFirstMessage: boolean) => {
-    if (isFirstMessage) {
-      return response; // Keep the full response for the first message
-    }
-    
-    // Remove common introduction patterns
-    const introPatterns = [
-      /^Hi! I'm Gru, your AI tutor\. /i,
-      /^Hello! I'm Gru, your AI tutor\. /i,
-      /^Hi there! I'm Gru, your AI tutor\. /i,
-      /^Greetings! I'm Gru, your AI tutor\. /i,
-      /^I'm Gru, your AI tutor\. /i,
-      /^As Gru, your AI tutor, /i,
-      /^As your AI tutor, /i,
-      /^As Gru, /i,
-      /^Hello there! /i, // Added this pattern
-      /^Hello! /i,       // Also catch generic 'Hello!'
-      /^Hi there! /i,    // And 'Hi there!'
-      /^Hi! /i,          // And 'Hi!'
-      /^Greetings! /i    // And 'Greetings!'
-    ];
-    
-    let cleanedResponse = response;
-    for (const pattern of introPatterns) {
-      cleanedResponse = cleanedResponse.replace(pattern, '');
-    }
-    
-    return cleanedResponse.trim();
-  };
-
   const sendMessage = async () => {
     if (!userInput.trim()) return;
     const currentInput = userInput.trim();
@@ -1307,7 +1276,6 @@ function ChatWithGru({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to get answer');
       
-      const isFirstMessage = messages.length === 0;
       setMessages(msgs => [...msgs, { role: 'gru', content: data.answer }]);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get answer';
