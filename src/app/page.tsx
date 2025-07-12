@@ -1014,7 +1014,7 @@ export default function Home() {
                     }`}
                 >
                   <div className="flex items-center mb-4">
-                    <Image
+                    <img
                       src={testimonial.avatar}
                       alt={testimonial.name}
                       width={48}
