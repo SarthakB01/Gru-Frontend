@@ -484,7 +484,8 @@ export default function Home() {
           </h1>
 
           <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
-            Gru Transforms Your Notes into Knowledge (or Brainrot!)
+            Gru Transforms Your Notes into Knowledge
+             {/* (or Brainrot!) */}
           </h2>
 
           <p className="text-gray-600 dark:text-gray-300 text-lg max-w-2xl mx-auto mb-8">
@@ -512,7 +513,7 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Browser mockup */}
+          {/* Browser mockup
           <div className="rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 shadow-xl border border-gray-200 dark:border-zinc-700 overflow-hidden max-w-4xl mx-auto transform transition-all duration-500 hover:scale-[1.02]">
             <div className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-zinc-700 dark:to-zinc-800 px-4 py-2 flex items-center border-b border-gray-200 dark:border-zinc-600">
               <div className="flex space-x-2">
@@ -527,13 +528,13 @@ export default function Home() {
             <div className="p-4">
               <Image
                 src="https://placehold.co/56x56?text=Gru"
-                alt="Gru AI Interface"
+                alt="Demonstration video here"
                 width={56}
                 height={56}
                 className="rounded-lg border border-gray-200 dark:border-zinc-600 shadow-md"
               />
             </div>
-          </div>
+          </div> */}
         </div>
       </section>
 
